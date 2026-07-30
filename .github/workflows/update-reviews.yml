@@ -1,0 +1,40 @@
+name: Actualizar reseñas de Google
+
+on:
+  schedule:
+    - cron: '0 5 * * *'      # cada día a las 05:00 UTC
+  workflow_dispatch:          # permite lanzarlo a mano desde la pestaña Actions
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Obtener reseñas de Google
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          PLACE_ID: ${{ vars.PLACE_ID }}
+          PLACE_QUERY: 'Luluca Nails Fuenlabrada'
+          MIN_RATING: '4'
+          MAX: '6'
+        run: node scripts/fetch-reviews.mjs
+
+      - name: Guardar cambios si los hay
+        run: |
+          git config user.name  "reviews-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add reviews.json
+          if git diff --staged --quiet; then
+            echo "Sin cambios en reviews.json"
+          else
+            git commit -m "Actualiza reseñas de Google"
+            git push
+          fi
