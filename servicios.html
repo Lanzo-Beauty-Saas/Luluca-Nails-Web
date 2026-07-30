@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Servicios y precios — Luluca Nails</title>
+<meta name="description" content="Carta completa de servicios y precios de Luluca Nails: manicura, pedicura, uñas esculpidas, nail art, pestañas, cejas, depilación y gemas dentales.">
+<meta property="og:title" content="Servicios y precios — Luluca Nails">
+<meta property="og:description" content="Carta completa de servicios y precios de Luluca Nails: manicura, pedicura, uñas esculpidas, nail art, pestañas, cejas, depilación y gemas dentales.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-locale="fuen">
+<div class="mock-note">Mockup de trabajo · <b>Luluca Nails</b> · fotos reales (mejoradas); stock solo donde falta foto propia · datos de Humanes y reservas Lanzo pendientes</div>
+<div class="localebar"><div class="lw">
+  <span class="lb-label">Elige tu salón:</span>
+  <div class="seg">
+    <button class="seg-btn on" data-k="fuen" onclick="setLocale('fuen')">Fuenlabrada</button>
+    <button class="seg-btn" data-k="huma" onclick="setLocale('huma')">Humanes</button>
+  </div>
+</div></div>
+<header class="nav"><div class="hw">
+  <a class="brand" href="index.html"><img class="logo-img" src="assets/img/logo-dark.png" alt="Luluca Nails"></a>
+  <nav class="menu" id="menu"><a href="index.html">Inicio</a><a href="servicios.html" class="active">Servicios</a><a href="galeria.html">Galería</a><a href="index.html#reservar">Reservar</a><a href="contacto.html">Contacto</a></nav>
+  <div class="nav-cta">
+    <a href="index.html#reservar" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Reservar cita</a>
+    <button class="burger" aria-label="Menú" onclick="toggleMenu()"><span></span><span></span><span></span></button>
+  </div>
+</div></header>
+
+<section class="page-hero"><span class="eyebrow">Carta de servicios</span><h1>Nuestros servicios y precios</h1><p>Todo lo que hacemos, ordenado por categorías para que encuentres el tuyo en segundos. Toca una categoría para desplegarla.</p></section>
+<div class="chips"><div class="cw">
+  <span class="chip" onclick="openCat('manicura')">Manicura</span>
+  <span class="chip" onclick="openCat('pedicura')">Pedicura</span>
+  <span class="chip" onclick="openCat('esculpidas')">Uñas esculpidas</span>
+  <span class="chip" onclick="openCat('nailart')">Nail art</span>
+  <span class="chip" onclick="openCat('mirada')">Pestañas y cejas</span>
+  <span class="chip" onclick="openCat('depilacion')">Depilación con hilo</span>
+  <span class="chip" onclick="openCat('gemas')">Gemas dentales</span>
+</div></div>
+<div class="catalog"><div class="wrap">
+
+  <!-- 1 MANICURA -->
+  <details class="cat2" id="manicura" open>
+    <summary><div class="sum-l"><span class="sum-n">1</span><div><div class="sum-t">Manicura · Uñas de manos</div><div class="sum-c">Semipermanente · Tradicional · Sin esmaltar · Kids</div></div></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="cat-body">
+      <div class="subg">Esmaltado semipermanente</div>
+      <div class="srv"><div class="s-main"><span class="s-name">Esmaltado semipermanente color liso</span><span class="s-desc">Retirar semi, limar, empujar cutículas y esmaltar · 40 min</span></div><span class="s-price">14,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Esmaltado semi con cutículas</span><span class="s-desc">Con retirada de cutículas · 45 min</span></div><span class="s-price">19,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Esmaltado semi con francesa básica</span><span class="s-desc">· 45 min</span></div><span class="s-price">17,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Nivelación</span><span class="s-desc">Nivelar la uña con base rubber y esmaltar color liso · 50 min</span></div><span class="s-price">27 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Manicura completa semi</span><span class="s-desc">Con exfoliación, hidratación con vela especial y masaje · 60 min</span></div><span class="s-price">26,90 €</span></div>
+
+      <div class="subg">Esmaltado tradicional</div>
+      <div class="srv"><div class="s-main"><span class="s-name">Esmaltado tradicional color liso</span><span class="s-desc">Limar, empujar cutículas y esmaltar · 30 min</span></div><span class="s-price">12,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Esmaltado tradicional con cutículas</span><span class="s-desc">· 40 min</span></div><span class="s-price">18,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Manicura completa tradicional</span><span class="s-desc">Con exfoliación, hidratación y masaje · 55 min</span></div><span class="s-price">22,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Esmaltado tradicional con francesa básica</span><span class="s-desc">· 40 min</span></div><span class="s-price">17,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Manicura kids</span><span class="s-desc">Para las más peques · 30 min</span></div><span class="s-price">12,90 €</span></div>
+
+      <div class="subg">Sin esmaltar</div>
+      <div class="srv"><div class="s-main"><span class="s-name">Manicura básica</span><span class="s-desc">Cortar y limar, pulir cutículas, brillo vitamínico, crema y masaje · 30 min</span></div><span class="s-price">11,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Manicura completa</span><span class="s-desc">Con retirada de cutículas, hidratación, masaje y esmalte vitamínico · 45 min</span></div><span class="s-price">18,90 €</span></div>
+
+      <div class="retiradas">
+        <div class="subg">Retiradas y arreglos</div>
+        <div class="srv"><div class="s-main"><span class="s-name">Retirar semi + manicura básica</span></div><span class="s-price">8 €</span></div>
+        <div class="srv"><div class="s-main"><span class="s-name">Retirar semi + esmalte tradicional</span></div><span class="s-price">15,90 €</span></div>
+        <div class="srv"><div class="s-main"><span class="s-name">Retirar semi + manicura completa tradicional</span></div><span class="s-price">26,90 €</span></div>
+        <div class="srv"><div class="s-main"><span class="s-name">Retirar acrílico + esmaltado en semi</span></div><span class="s-price">26,90 €</span></div>
+        <div class="srv"><div class="s-main"><span class="s-name">Reparar 1 uña en semi</span></div><span class="s-price">1,50 €</span></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- 2 PEDICURA -->
+  <details class="cat2" id="pedicura">
+    <summary><div class="sum-l"><span class="sum-n">2</span><div><div class="sum-t">Pedicura · Uñas de pies</div><div class="sum-c">Deluxe Spa · Semipermanente · Tradicional</div></div></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="cat-body">
+      <div class="subg">Pedicura Deluxe Spa</div>
+      <div class="srv"><div class="s-main"><span class="s-name">Pedicura Deluxe Spa</span><span class="s-desc">Durezas, tratamiento con colágeno y vitamina E, sauna y esmaltado semi · 60 min</span></div><span class="s-price">35 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Pedicura sin esmaltado Deluxe Spa</span><span class="s-desc">El tratamiento completo, sin color · 50 min</span></div><span class="s-price">28 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Pedicura Deluxe Spa + esmalte tradicional</span><span class="s-desc">· 60 min</span></div><span class="s-price">33 €</span></div>
+
+      <div class="subg">Esmaltado y exprés</div>
+      <div class="srv"><div class="s-main"><span class="s-name">Esmaltado semipermanente color liso</span><span class="s-desc">Retirar semi, limar, empujar cutículas y esmaltar · 30 min</span></div><span class="s-price">18,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Esmaltado exprés tradicional</span><span class="s-desc">Limar, pulir cutículas y esmaltar · 30 min</span></div><span class="s-price">17,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Cortar y limar + masaje 5 min</span><span class="s-desc">· 20 min</span></div><span class="s-price">10,90 €</span></div>
+
+      <div class="retiradas">
+        <div class="subg">Retiradas y arreglos</div>
+        <div class="srv"><div class="s-main"><span class="s-name">Retirar semipermanente</span></div><span class="s-price">8 €</span></div>
+        <div class="srv"><div class="s-main"><span class="s-name">Retirar semi + esmalte tradicional</span></div><span class="s-price">21 €</span></div>
+        <div class="srv"><div class="s-main"><span class="s-name">Retirar semi + pedicura tradicional completa</span></div><span class="s-price">27 €</span></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- 3 ESCULPIDAS -->
+  <details class="cat2" id="esculpidas">
+    <summary><div class="sum-l"><span class="sum-n">3</span><div><div class="sum-t">Uñas esculpidas · Gel y acrílico</div><div class="sum-c">Uñas nuevas · Rellenos · Retiradas</div></div></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="cat-body">
+      <div class="subg">Uñas nuevas</div>
+      <div class="srv"><div class="s-main"><span class="s-name">Uñas nuevas con extensión + semi / tradicional</span><span class="s-desc">Máximo de largo molde nº2, color liso · 75 min</span></div><span class="s-price">36,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Uñas nuevas con extensión — Soft Gel</span><span class="s-desc">Alargamiento con soft gel · 70 min</span></div><span class="s-price">31,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Uñas nuevas sin extensión + semi / tradicional</span><span class="s-desc">· 65 min</span></div><span class="s-price">31,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Uñas nuevas Stiletto · Bailarina · XXL</span><span class="s-desc">Largo superior a molde nº2 · 80 min</span></div><span class="s-price">40,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Uñas nuevas con extensión baby boomer</span><span class="s-desc">· 80 min</span></div><span class="s-price">45,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Reconstrucción de uñas mordidas</span><span class="s-desc">· 75 min</span></div><span class="s-price">40,90 €</span></div>
+
+      <div class="subg">Rellenos</div>
+      <div class="srv"><div class="s-main"><span class="s-name">Rellenos + semi / tradicional</span><span class="s-desc">Sin uñas rotas, hasta 3 semanas / 21 días · 60 min</span></div><span class="s-price">31,90 €</span></div>
+
+      <div class="retiradas">
+        <div class="subg">Retiradas y arreglos</div>
+        <div class="srv"><div class="s-main"><span class="s-name">Retirar gel / acrílico</span><span class="s-desc">Retirar, limar, empujar cutícula y brillo tratamiento</span></div><span class="s-price">13 €</span></div>
+        <div class="srv"><div class="s-main"><span class="s-name">Parche gel / acrílico en manos</span></div><span class="s-price">2,50 €</span></div>
+        <div class="srv"><div class="s-main"><span class="s-name">Uñas acrílicas dedos grandes de los pies</span><span class="s-desc">Las dos · una sola uña 6 €</span></div><span class="s-price">10 €</span></div>
+        <div class="srv"><div class="s-main"><span class="s-name">Reparación uña rota mano / pie</span></div><span class="s-price">4,50 €</span></div>
+        <div class="note">Si hay que retirar gel/acrílico antes de unas uñas nuevas: +10 €</div>
+      </div>
+    </div>
+  </details>
+
+  <!-- 4 NAIL ART -->
+  <details class="cat2" id="nailart">
+    <summary><div class="sum-l"><span class="sum-n">4</span><div><div class="sum-t">Nail art y diseños</div><div class="sum-c">Diseños completos · Decoración por uña</div></div></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="cat-body">
+      <div class="subg">Diseños completos</div>
+      <div class="srv"><div class="s-main"><span class="s-name">Francesa</span></div><span class="s-price">17 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Francesa 5 colores liso</span></div><span class="s-price">19,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Semipermanente 5 colores liso</span></div><span class="s-price">17,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Ojo de gato</span></div><span class="s-price">18,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Aurora</span></div><span class="s-price">19,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Baby boomer</span></div><span class="s-price">23,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Baby boomer 2 colores o más</span></div><span class="s-price">26,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Polka Dots</span></div><span class="s-price">25,90 €</span></div>
+
+      <div class="subg">Decoración por uña</div>
+      <div class="srv"><div class="s-main"><span class="s-name">Decoración semi basic</span><span class="s-desc">1 uña sencilla</span></div><span class="s-price">2 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Decoración semi basic — 10 uñas</span></div><span class="s-price">30,90 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Decoración semi premium</span><span class="s-desc">1 uña</span></div><span class="s-price">3,50 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Decoración semi premium — 10 uñas</span></div><span class="s-price">40 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Dibujo cartoon</span><span class="s-desc">1 uña</span></div><span class="s-price">5,90 €</span></div>
+    </div>
+  </details>
+
+  <!-- 5 PESTAÑAS Y CEJAS -->
+  <details class="cat2" id="mirada">
+    <summary><div class="sum-l"><span class="sum-n">5</span><div><div class="sum-t">Pestañas y cejas</div><div class="sum-c">Lifting · Tinte · Laminado</div></div></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="cat-body">
+      <div class="srv"><div class="s-main"><span class="s-name">Lifting de pestañas</span><span class="s-desc">Realce natural de tu mirada · 45 min</span></div><span class="s-price">30 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Lifting de pestañas + tinte</span><span class="s-desc">· 60 min</span></div><span class="s-price">37 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Laminado de cejas</span><span class="s-desc">Cejas definidas y peinadas · 45 min</span></div><span class="s-price">35 €</span></div>
+    </div>
+  </details>
+
+  <!-- 6 DEPILACIÓN -->
+  <details class="cat2" id="depilacion">
+    <summary><div class="sum-l"><span class="sum-n">6</span><div><div class="sum-t">Depilación con hilo</div><div class="sum-c">Rostro · zonas y combos</div></div></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="cat-body">
+      <div class="srv"><div class="s-main"><span class="s-name">Cejas</span><span class="s-desc">· 15 min</span></div><span class="s-price">10,50 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Labio</span></div><span class="s-price">7,50 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Combo cejas y labio</span><span class="s-desc">· 30 min</span></div><span class="s-price">17 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Mentón</span></div><span class="s-price">7,50 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Frente</span></div><span class="s-price">7,50 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Mejillas</span></div><span class="s-price">7,50 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Patillas</span></div><span class="s-price">9,50 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Cara completa</span><span class="s-desc">· 30 min</span></div><span class="s-price">33 €</span></div>
+    </div>
+  </details>
+
+  <!-- 7 GEMAS -->
+  <details class="cat2" id="gemas">
+    <summary><div class="sum-l"><span class="sum-n">7</span><div><div class="sum-t">Gemas dentales</div><div class="sum-c">Un toque de brillo a tu sonrisa</div></div></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="cat-body">
+      <div class="srv"><div class="s-main"><span class="s-name">Gema dental</span><span class="s-desc">Piedra preciosa de un solo color · 30 min</span></div><span class="s-price">30 €</span></div>
+      <div class="srv"><div class="s-main"><span class="s-name">Gema dental Mariposa</span><span class="s-desc">Cristal Swarovski · 30 min</span></div><span class="s-price">75 €</span></div>
+    </div>
+  </details>
+
+</div></div>
+<section class="reserva-band" id="reserva"><span class="eyebrow" style="color:var(--gold-2)">Reserva online</span><h2>¿Lo tienes claro? Reserva en un minuto</h2><p>Elige día y hora en la agenda del salón de <span data-locname>Fuenlabrada</span>. Sin llamadas ni esperas.</p><a href="index.html#reservar" class="btn btn-gold">Ir a reservar</a></section>
+<div class="disc">Precios y servicios orientativos según la lista del salón. Las duraciones son aproximadas y pueden variar según el estado de la uña. Consulta cualquier duda antes de tu cita.</div>
+<footer id="contacto-foot"><div class="fw">
+  <div>
+    <img class="foot-logo" src="assets/img/logo-light.png" alt="Luluca Nails">
+    <p class="about">Centro de uñas, cejas y belleza en Fuenlabrada y Humanes. Cuidamos cada detalle para realzar tu estilo y hacerte brillar.</p>
+    <div class="social">
+      <a href="https://www.instagram.com/lulucanails" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+      <a href="https://www.tiktok.com/@lulucanails" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 4v9.5a3.5 3.5 0 1 1-3-3.5"/><path d="M15 6a4 4 0 0 0 4 4"/></svg></a>
+      <a href="https://www.facebook.com/lulucanails" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 8h2V5h-2a3 3 0 0 0-3 3v2H9v3h2v6h3v-6h2l1-3h-3V8a1 1 0 0 1 1-1z"/></svg></a>
+      <a href="https://wa.me/34690062762?text=Hola%2C%20quiero%20reservar%20una%20cita%20en%20Luluca%20Nails" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 0 1-13.6 7.7L3 21l1.3-4.4A9 9 0 1 1 21 12z"/></svg></a>
+    </div>
+  </div>
+  <div><h5>Salón Fuenlabrada</h5><a href="https://www.google.com/maps/search/?api=1&query=Calle%20Escocia%201%20Fuenlabrada" target="_blank" rel="noopener">Calle Escocia 1, Fuenlabrada, Madrid</a><a href="tel:+34690062762">+34 690 06 27 62</a><a href="mailto:info@lulucanails.com">info@lulucanails.com</a><span style="color:#a9b6a9">L-V 09:00–20:00 · S 09:00–14:00</span></div>
+  <div><h5>Salón Humanes</h5><a href="#">Dirección (pendiente)</a><a href="#">Teléfono (pendiente)</a><a href="index.html#reservar" onclick="setLocale('huma')">Reservar en Humanes</a><a href="servicios.html">Ver servicios</a></div>
+</div>
+<div class="legal">© 2026 Luluca Nails · Fuenlabrada y Humanes · Reservas gestionadas con Lanzo · Aviso legal · Privacidad</div>
+</footer>
+<div class="mobile-book">
+  <a href="https://wa.me/34690062762?text=Hola%2C%20quiero%20reservar%20una%20cita%20en%20Luluca%20Nails" target="_blank" rel="noopener" class="btn btn-wa call" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 0 1-13.6 7.7L3 21l1.3-4.4A9 9 0 1 1 21 12z"/></svg></a>
+  <a href="index.html#reservar" class="btn btn-primary">Reservar cita</a>
+</div>
+<div class="lb" id="lb" onclick="closeLb(event)"><button class="lb-close" onclick="closeLb(event)">&times;</button><img id="lb-img" src="" alt=""></div>
+<script>
+var NAMES={fuen:'Fuenlabrada',huma:'Humanes'};
+function setLocale(k){document.body.dataset.locale=k;document.querySelectorAll('[data-locname]').forEach(function(e){e.textContent=NAMES[k];});document.querySelectorAll('.seg-btn').forEach(function(b){b.classList.toggle('on',b.dataset.k===k);});}
+function toggleMenu(){document.getElementById('menu').classList.toggle('open');}
+function openCat(id){var d=document.getElementById(id);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}}
+function openLb(src){var lb=document.getElementById('lb');document.getElementById('lb-img').src=src;lb.classList.add('on');}
+function closeLb(e){document.getElementById('lb').classList.remove('on');}
+</script>
+</body>
+</html>
