@@ -15,14 +15,7 @@
 <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body data-locale="fuen">
-<div class="mock-note">Mockup de trabajo · <b>Luluca Nails</b> · fotos reales (mejoradas); stock solo donde falta foto propia · datos de Humanes y reservas Lanzo pendientes</div>
-<div class="localebar"><div class="lw">
-  <span class="lb-label">Elige tu salón:</span>
-  <div class="seg">
-    <button class="seg-btn on" data-k="fuen" onclick="setLocale('fuen')">Fuenlabrada</button>
-    <button class="seg-btn" data-k="huma" onclick="setLocale('huma')">Humanes</button>
-  </div>
-</div></div>
+<div style="background:var(--forest);color:#fff;text-align:center;font-size:13.5px;padding:9px 16px;line-height:1.35">Hemos estrenado página web — es el mismo salón de siempre: <b style="color:var(--gold-2)">Luluca Nails · Fuenlabrada</b>. ¡Gracias por seguir confiando en nosotras!</div>
 <header class="nav"><div class="hw">
   <a class="brand" href="index.html"><img class="logo-img" src="assets/img/logo-dark.png" alt="Luluca Nails"></a>
   <nav class="menu" id="menu"><a href="index.html">Inicio</a><a href="servicios.html">Servicios</a><a href="galeria.html" class="active">Galería</a><a href="index.html#reservar">Reservar</a><a href="contacto.html">Contacto</a></nav>
@@ -38,7 +31,7 @@
 <footer id="contacto-foot"><div class="fw">
   <div>
     <img class="foot-logo" src="assets/img/logo-light.png" alt="Luluca Nails">
-    <p class="about">Centro de uñas, cejas y belleza en Fuenlabrada y Humanes. Cuidamos cada detalle para realzar tu estilo y hacerte brillar.</p>
+    <p class="about">Centro de uñas, cejas y belleza en Fuenlabrada. Uñas sanas, 100% veganas y de larga duración, cuidando cada detalle para hacerte brillar.</p>
     <div class="social">
       <a href="https://www.instagram.com/lulucanails" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
       <a href="https://www.tiktok.com/@lulucanails" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 4v9.5a3.5 3.5 0 1 1-3-3.5"/><path d="M15 6a4 4 0 0 0 4 4"/></svg></a>
@@ -47,9 +40,9 @@
     </div>
   </div>
   <div><h5>Salón Fuenlabrada</h5><a href="https://www.google.com/maps/search/?api=1&query=Calle%20Escocia%201%20Fuenlabrada" target="_blank" rel="noopener">Calle Escocia 1, Fuenlabrada, Madrid</a><a href="tel:+34690062762">+34 690 06 27 62</a><a href="mailto:info@lulucanails.com">info@lulucanails.com</a><span style="color:#a9b6a9">L-V 09:00–20:00 · S 09:00–14:00</span></div>
-  <div><h5>Salón Humanes</h5><a href="#">Dirección (pendiente)</a><a href="#">Teléfono (pendiente)</a><a href="index.html#reservar" onclick="setLocale('huma')">Reservar en Humanes</a><a href="servicios.html">Ver servicios</a></div>
+  <div><h5>Enlaces</h5><a href="servicios.html">Servicios y precios</a><a href="galeria.html">Galería</a><a href="index.html#reservar">Reservar cita</a><a href="contacto.html">Contacto</a></div>
 </div>
-<div class="legal">© 2026 Luluca Nails · Fuenlabrada y Humanes · Reservas gestionadas con Lanzo · Aviso legal · Privacidad</div>
+<div class="legal">© 2026 Luluca Nails · Fuenlabrada · Reservas gestionadas con Lanzo · Aviso legal · Privacidad</div>
 </footer>
 <div class="mobile-book">
   <a href="https://wa.me/34690062762?text=Hola%2C%20quiero%20reservar%20una%20cita%20en%20Luluca%20Nails" target="_blank" rel="noopener" class="btn btn-wa call" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 0 1-13.6 7.7L3 21l1.3-4.4A9 9 0 1 1 21 12z"/></svg></a>
@@ -63,6 +56,23 @@ function toggleMenu(){document.getElementById('menu').classList.toggle('open');}
 function openCat(id){var d=document.getElementById(id);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}}
 function openLb(src){var lb=document.getElementById('lb');document.getElementById('lb-img').src=src;lb.classList.add('on');}
 function closeLb(e){document.getElementById('lb').classList.remove('on');}
+// ---- Reseñas de Google: refresco automático desde reviews.json ----
+(function(){
+  var grid=document.getElementById('rev-grid'); if(!grid) return;
+  var G='<svg viewBox="0 0 48 48" width="16" height="16"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>';
+  function esc(s){return (''+(s||'')).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function stars(n){n=Math.max(1,Math.min(5,Math.round(n||5)));var s='';for(var i=0;i<n;i++)s+='★';return s;}
+  fetch('reviews.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    if(!d||!d.reviews||!d.reviews.length) return;
+    var sc=document.getElementById('rev-score'); if(sc&&d.rating){sc.textContent=(''+d.rating).replace('.',',');}
+    var cn=document.getElementById('rev-count-num'); if(cn&&(d.count||d.count===0)){cn.textContent=d.count;}
+    grid.innerHTML=d.reviews.map(function(v){
+      var ini=esc(((v.name||'?').trim().charAt(0)||'?').toUpperCase());
+      var av = v.photo ? '<div class="av" style="background-image:url('+JSON.stringify(v.photo)+');background-size:cover;color:transparent">'+ini+'</div>' : '<div class="av">'+ini+'</div>';
+      return '<div class="rev"><div class="top" style="display:flex;align-items:center;gap:12px">'+av+'<div><div class="who">'+esc(v.name)+'</div><div class="stars">'+stars(v.rating)+'</div></div><span style="margin-left:auto;width:16px;height:16px;display:inline-flex;flex:0 0 auto">'+G+'</span></div><p>"'+esc(v.text)+'"</p><div style="color:var(--muted);font-size:12.5px;margin-top:12px">'+esc(v.date)+' · Google</div></div>';
+    }).join('');
+  }).catch(function(){});
+})();
 </script>
 </body>
 </html>
