@@ -20,7 +20,7 @@
   <a class="brand" href="index.html"><img class="logo-img" src="assets/img/logo-dark.png" alt="Luluca Nails"></a>
   <nav class="menu" id="menu"><a href="index.html">Inicio</a><a href="servicios.html" class="active">Servicios</a><a href="galeria.html">Galería</a><a href="index.html#reservar">Reservar</a><a href="contacto.html">Contacto</a></nav>
   <div class="nav-cta">
-    <a href="https://app.lanzo.es/luluca-nails-fuenlabrada" target="_blank" rel="noopener" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Reservar cita</a>
+    <a href="index.html#reservar" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Reservar cita</a>
     <button class="burger" aria-label="Menú" onclick="toggleMenu()"><span></span><span></span><span></span></button>
   </div>
 </div></header>
@@ -177,7 +177,7 @@
   </details>
 
 </div></div>
-<section class="reserva-band" id="reserva"><span class="eyebrow" style="color:var(--gold-2)">Reserva online</span><h2>¿Lo tienes claro? Reserva en un minuto</h2><p>Elige día y hora en la agenda del salón de <span data-locname>Fuenlabrada</span>. Sin llamadas ni esperas.</p><a href="https://app.lanzo.es/luluca-nails-fuenlabrada" target="_blank" rel="noopener" class="btn btn-gold">Ir a reservar</a></section>
+<section class="reserva-band" id="reserva"><span class="eyebrow" style="color:var(--gold-2)">Reserva online</span><h2>¿Lo tienes claro? Reserva en un minuto</h2><p>Elige día y hora en la agenda del salón de <span data-locname>Fuenlabrada</span>. Sin llamadas ni esperas.</p><a href="index.html#reservar" class="btn btn-gold">Ir a reservar</a></section>
 <div class="disc">Precios y servicios orientativos según la lista del salón. Las duraciones son aproximadas y pueden variar según el estado de la uña. Consulta cualquier duda antes de tu cita.</div>
 <footer id="contacto-foot"><div class="fw">
   <div>
@@ -191,13 +191,13 @@
     </div>
   </div>
   <div><h5>Salón Fuenlabrada</h5><a href="https://www.google.com/maps/search/?api=1&query=Calle%20Escocia%201%20Fuenlabrada" target="_blank" rel="noopener">Calle Escocia 1, Fuenlabrada, Madrid</a><a href="tel:+34690062762">+34 690 06 27 62</a><a href="mailto:info@lulucanails.com">info@lulucanails.com</a><span style="color:#a9b6a9">L-V 09:00–20:00 · S 09:00–14:00</span></div>
-  <div><h5>Enlaces</h5><a href="servicios.html">Servicios y precios</a><a href="galeria.html">Galería</a><a href="https://app.lanzo.es/luluca-nails-fuenlabrada" target="_blank" rel="noopener">Reservar cita</a><a href="contacto.html">Contacto</a></div>
+  <div><h5>Enlaces</h5><a href="servicios.html">Servicios y precios</a><a href="galeria.html">Galería</a><a href="index.html#reservar">Reservar cita</a><a href="contacto.html">Contacto</a></div>
 </div>
 <div class="legal">© 2026 Luluca Nails · Fuenlabrada · Reservas gestionadas con Lanzo · Aviso legal · Privacidad</div>
 </footer>
 <div class="mobile-book">
   <a href="https://wa.me/34690062762?text=Hola%2C%20quiero%20reservar%20una%20cita%20en%20Luluca%20Nails" target="_blank" rel="noopener" class="btn btn-wa call" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 0 1-13.6 7.7L3 21l1.3-4.4A9 9 0 1 1 21 12z"/></svg></a>
-  <a href="https://app.lanzo.es/luluca-nails-fuenlabrada" target="_blank" rel="noopener" class="btn btn-primary">Reservar cita</a>
+  <a href="index.html#reservar" class="btn btn-primary">Reservar cita</a>
 </div>
 <div class="lb" id="lb" onclick="closeLb(event)"><button class="lb-close" onclick="closeLb(event)">&times;</button><img id="lb-img" src="" alt=""></div>
 <script>
@@ -223,6 +223,142 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
       return '<div class="rev"><div class="top" style="display:flex;align-items:center;gap:12px">'+av+'<div><div class="who">'+esc(v.name)+'</div><div class="stars">'+stars(v.rating)+'</div></div><span style="margin-left:auto;width:16px;height:16px;display:inline-flex;flex:0 0 auto">'+G+'</span></div><p>"'+esc(v.text)+'"</p><div style="color:var(--muted);font-size:12.5px;margin-top:12px">'+esc(v.date)+' · Google</div></div>';
     }).join('');
   }).catch(function(){});
+})();
+// ===== Widget de reservas Lanzo (embebido, la clienta no sale de la web) =====
+(function(){
+  var root=document.getElementById('lz-book'); if(!root) return;
+  var SLUG=root.dataset.slug, API=root.dataset.api, WA=root.dataset.wa||'#';
+  var st={service:null,date:null,slot:null,employeeId:null,_slots:[],_services:[]};
+  var view={y:0,m:0};
+  var MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var css=[
+   '#lz-book .lz-h{font-family:"Cormorant Garamond",serif;color:var(--forest);font-size:22px;margin:4px 0 12px}',
+   '#lz-book label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;font-weight:600}',
+   '#lz-book select,#lz-book input{width:100%;padding:11px 12px;border:1px solid #e3e0d8;border-radius:12px;font:inherit;background:#fff;color:var(--forest);box-sizing:border-box}',
+   '#lz-book .lz-meta{font-size:13px;color:var(--muted);margin-top:6px}',
+   '.lz-calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}',
+   '.lz-calhead b{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:18px;color:var(--forest);text-transform:capitalize}',
+   '.lz-nav{border:none;background:#f0efe9;width:32px;height:32px;border-radius:9px;cursor:pointer;font-size:16px;color:var(--forest)}',
+   '.lz-nav:disabled{opacity:.35;cursor:default}',
+   '.lz-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px}',
+   '.lz-dow span{text-align:center;font-size:11px;color:var(--muted)}',
+   '.lz-days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}',
+   '.lz-day{padding:9px 0;border:1px solid transparent;border-radius:9px;background:#f7f6f1;cursor:pointer;font:inherit;color:var(--forest)}',
+   '.lz-day.off{opacity:.3;background:transparent;cursor:default}',
+   '.lz-day.sel{background:var(--forest);color:#fff}',
+   '#lz-times,#lz-emps{display:flex;flex-wrap:wrap;gap:8px}',
+   '.lz-time,.lz-emp{padding:9px 14px;border:1px solid #e3e0d8;border-radius:10px;background:#fff;cursor:pointer;font:inherit;color:var(--forest)}',
+   '.lz-time.sel,.lz-emp.sel{background:var(--forest);color:#fff;border-color:var(--forest)}',
+   '.lz-msg{color:var(--muted);font-size:14px;padding:6px 0}',
+   '.lz-err{color:#b3261e;font-size:13px;margin-top:8px;min-height:16px}',
+   '.lz-foot{margin-top:16px;font-size:13px;color:var(--muted)}',
+   '.lz-foot a{color:var(--forest);text-decoration:underline}',
+   '.lz-ok{text-align:center;padding:10px 0}',
+   '.lz-check{width:52px;height:52px;border-radius:50%;background:var(--forest);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;margin:6px auto 12px}',
+   '.lz-ok h4{font-family:"Cormorant Garamond",serif;color:var(--forest);font-size:24px;margin-bottom:8px}',
+   '.lz-ok p{color:var(--muted);margin-bottom:10px}'
+  ].join('');
+  var stl=document.createElement('style'); stl.textContent=css; document.head.appendChild(stl);
+
+  function esc(s){s=''+(s||'');return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function eur(n){n=Number(n)||0;return (Math.round(n*100)/100).toString().replace('.',',')+' €';}
+  function fmt(iso){return new Date(iso).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'});}
+  function todayYMD(){return new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Madrid'});}
+  function ymd(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+  function api(p){return fetch(API+p).then(function(r){if(!r.ok){var e=new Error('x');e.status=r.status;throw e;}return r.json();});}
+  function g(id){return document.getElementById(id);}
+  function show(s){var e=g('lz-step-'+s); if(e) e.hidden=false;}
+  function hide(s){var e=g('lz-step-'+s); if(e) e.hidden=true;}
+
+  root.innerHTML=
+   '<span class="cal-badge">Reservas 24/7 con Lanzo</span>'+
+   '<div class="lz-h">Reserva tu cita</div>'+
+   '<div id="lz-step-svc"><label>1 · Elige servicio</label><select id="lz-svc"><option value="">Cargando servicios…</option></select><div class="lz-meta" id="lz-svcmeta"></div></div>'+
+   '<div id="lz-step-date" hidden><label>2 · Elige día</label><div id="lz-cal"></div></div>'+
+   '<div id="lz-step-time" hidden><label>3 · Elige hora</label><div id="lz-times"></div></div>'+
+   '<div id="lz-step-emp" hidden><label>4 · Elige profesional</label><div id="lz-emps"></div></div>'+
+   '<div id="lz-step-form" hidden><label>5 · Tus datos</label><input id="lz-name" placeholder="Nombre y apellidos" autocomplete="name"><div style="height:8px"></div><input id="lz-phone" placeholder="Teléfono móvil" inputmode="tel" autocomplete="tel"><button id="lz-confirm" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">Confirmar reserva</button><div class="lz-err" id="lz-err"></div></div>'+
+   '<div class="lz-foot">Confirmación inmediata y recordatorio automático. ¿Prefieres WhatsApp? <a href="'+WA+'" target="_blank" rel="noopener">Escríbenos</a></div>';
+
+  api('/salon/'+SLUG).then(function(s){
+    var svcs=(s&&s.services)||[]; st._services=svcs;
+    g('lz-svc').innerHTML='<option value="">Elige un servicio…</option>'+svcs.map(function(v){return '<option value="'+v.id+'">'+esc(v.name)+'  ·  '+(v.durationMin||0)+' min  ·  '+eur(v.priceEur)+'</option>';}).join('');
+  }).catch(function(){ g('lz-svc').innerHTML='<option value="">No se pudieron cargar los servicios</option>'; });
+
+  function renderCal(){
+    var today=todayYMD();
+    if(!view.y){ view.y=parseInt(today.slice(0,4),10); view.m=parseInt(today.slice(5,7),10)-1; }
+    var first=new Date(view.y,view.m,1).getDay(), offset=(first+6)%7, dim=new Date(view.y,view.m+1,0).getDate();
+    var curYM=today.slice(0,7), viewYM=ymd(view.y,view.m,1).slice(0,7);
+    var h='<div class="lz-calhead"><button type="button" class="lz-nav" id="lz-prev"'+(viewYM<=curYM?' disabled':'')+'>‹</button><b>'+MES[view.m]+' '+view.y+'</b><button type="button" class="lz-nav" id="lz-next">›</button></div>';
+    h+='<div class="lz-dow"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div><div class="lz-days">';
+    for(var i=0;i<offset;i++) h+='<span></span>';
+    for(var d=1;d<=dim;d++){ var ds=ymd(view.y,view.m,d), past=ds<today; h+='<button type="button" class="lz-day'+(past?' off':'')+(st.date===ds?' sel':'')+'"'+(past?' disabled':'')+' data-d="'+ds+'">'+d+'</button>'; }
+    g('lz-cal').innerHTML=h+'</div>';
+  }
+
+  function loadTimes(ds){
+    st.date=ds; st.slot=null; st.employeeId=null; hide('emp'); hide('form');
+    show('time'); g('lz-times').innerHTML='<div class="lz-msg">Buscando horas libres…</div>'; renderCal();
+    api('/availability?salonSlug='+SLUG+'&date='+ds+'&serviceId='+st.service.id).then(function(a){
+      var slots=(a&&a.slots)||[]; st._slots=slots;
+      if(!slots.length){ g('lz-times').innerHTML='<div class="lz-msg">No hay horas libres ese día. Prueba con otro.</div>'; return; }
+      g('lz-times').innerHTML=slots.map(function(s,i){return '<button type="button" class="lz-time" data-i="'+i+'">'+fmt(s.startsAt)+'</button>';}).join('');
+    }).catch(function(){ g('lz-times').innerHTML='<div class="lz-msg">No se pudo cargar la disponibilidad. Prueba de nuevo.</div>'; });
+  }
+
+  function pickTime(i){
+    st.slot=st._slots[i]; st.employeeId=null; hide('form');
+    var tb=g('lz-times').children; for(var k=0;k<tb.length;k++) tb[k].classList.toggle('sel', String(tb[k].dataset.i)===String(i));
+    var emps=(st.slot&&st.slot.employees)||[]; show('emp');
+    g('lz-emps').innerHTML='<button type="button" class="lz-emp" data-e="any">Sin preferencia</button>'+emps.map(function(e){return '<button type="button" class="lz-emp" data-e="'+e.id+'">'+esc(e.name)+'</button>';}).join('');
+  }
+
+  function pickEmp(val){
+    var emps=(st.slot&&st.slot.employees)||[];
+    st.employeeId=(val==='any')?(emps[0]&&emps[0].id):val;
+    var eb=g('lz-emps').children; for(var k=0;k<eb.length;k++) eb[k].classList.toggle('sel', eb[k].dataset.e===val);
+    show('form');
+  }
+
+  function doBooking(){
+    var name=g('lz-name').value.trim(), phone=g('lz-phone').value.trim(), err=g('lz-err');
+    if(name.length<2){ err.textContent='Escribe tu nombre.'; return; }
+    if(phone.replace(/[^0-9]/g,'').length<7){ err.textContent='Escribe un teléfono válido.'; return; }
+    if(!st.employeeId){ err.textContent='Elige una profesional.'; return; }
+    err.textContent='';
+    var btn=g('lz-confirm'); btn.disabled=true; btn.textContent='Reservando…';
+    fetch(API+'/booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({salonSlug:SLUG,serviceId:st.service.id,employeeId:st.employeeId,startTime:st.slot.startsAt,clientName:name,clientPhone:phone})}).then(function(r){
+      if(r.status===201){ return r.json().then(done); }
+      if(r.status===409){ err.textContent='Ese hueco se acaba de ocupar. Te muestro otras horas.'; btn.disabled=false; btn.textContent='Confirmar reserva'; loadTimes(st.date); return; }
+      err.textContent='No se pudo reservar. Inténtalo de nuevo o escríbenos por WhatsApp.'; btn.disabled=false; btn.textContent='Confirmar reserva';
+    }).catch(function(){ err.textContent='Error de conexión. Prueba de nuevo o escríbenos por WhatsApp.'; btn.disabled=false; btn.textContent='Confirmar reserva'; });
+  }
+
+  function done(j){
+    var iso=(j&&j.startsAt)||st.slot.startsAt;
+    var dia=new Date(iso).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',timeZone:'Europe/Madrid'});
+    var emp=(j&&j.employee&&j.employee.name)||'';
+    root.innerHTML='<span class="cal-badge">Reserva confirmada</span><div class="lz-ok"><div class="lz-check">✓</div><h4>¡Cita confirmada!</h4><p>'+esc(st.service.name)+(emp?(' con '+esc(emp)):'')+'<br>'+esc(dia)+' a las '+fmt(iso)+'</p><p style="font-size:13px">Te esperamos. Recibirás un recordatorio; si necesitas cambiarla, escríbenos por WhatsApp.</p><a class="btn btn-ghost" href="'+WA+'" target="_blank" rel="noopener">Escribir por WhatsApp</a></div>';
+  }
+
+  g('lz-svc').addEventListener('change', function(){
+    var id=this.value; st.service=(st._services||[]).filter(function(v){return v.id===id;})[0]||null;
+    st.date=null; st.slot=null; st.employeeId=null; hide('time'); hide('emp'); hide('form');
+    if(!st.service){ g('lz-svcmeta').textContent=''; hide('date'); return; }
+    g('lz-svcmeta').textContent=(st.service.durationMin||0)+' min · '+eur(st.service.priceEur);
+    view.y=0; renderCal(); show('date');
+  });
+
+  root.addEventListener('click', function(ev){
+    var t=ev.target.closest('button'); if(!t) return;
+    if(t.id==='lz-prev'){ var a=new Date(view.y,view.m-1,1); view.y=a.getFullYear(); view.m=a.getMonth(); renderCal(); return; }
+    if(t.id==='lz-next'){ var b=new Date(view.y,view.m+1,1); view.y=b.getFullYear(); view.m=b.getMonth(); renderCal(); return; }
+    if(t.classList.contains('lz-day') && !t.disabled){ loadTimes(t.dataset.d); return; }
+    if(t.classList.contains('lz-time')){ pickTime(parseInt(t.dataset.i,10)); return; }
+    if(t.classList.contains('lz-emp')){ pickEmp(t.dataset.e); return; }
+    if(t.id==='lz-confirm'){ ev.preventDefault(); doBooking(); return; }
+  });
 })();
 </script>
 </body>
