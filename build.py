@@ -18,6 +18,8 @@ CLIENT = {
   "fuen_hours": "L-V 09:00–20:00 · S 09:00–14:00",
 }
 
+BOOKING_URL = "https://app.lanzo.es/luluca-nails-fuenlabrada"
+
 WA_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 0 1-13.6 7.7L3 21l1.3-4.4A9 9 0 1 1 21 12z"/></svg>'
 CAL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'
 G_SVG = '<svg viewBox="0 0 48 48" width="16" height="16"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>'
@@ -111,7 +113,7 @@ def header(active):
   <a class="brand" href="index.html"><img class="logo-img" src="assets/img/logo-dark.png" alt="Luluca Nails"></a>
   <nav class="menu" id="menu">{nav}</nav>
   <div class="nav-cta">
-    <a href="index.html#reservar" class="btn btn-primary">{CAL_ICON} Reservar cita</a>
+    <a href="{BOOKING_URL}" target="_blank" rel="noopener" class="btn btn-primary">{CAL_ICON} Reservar cita</a>
     <button class="burger" aria-label="Menú" onclick="toggleMenu()"><span></span><span></span><span></span></button>
   </div>
 </div></header>
@@ -131,7 +133,7 @@ def footer():
     </div>
   </div>
   <div><h5>Salón Fuenlabrada</h5><a href="{c['fuen_maps']}" target="_blank" rel="noopener">{c['fuen_addr']}</a><a href="tel:{c['tel']}">{c['phone_display']}</a><a href="mailto:{c['email']}">{c['email']}</a><span style="color:#a9b6a9">{c['fuen_hours']}</span></div>
-  <div><h5>Enlaces</h5><a href="servicios.html">Servicios y precios</a><a href="galeria.html">Galería</a><a href="index.html#reservar">Reservar cita</a><a href="contacto.html">Contacto</a></div>
+  <div><h5>Enlaces</h5><a href="servicios.html">Servicios y precios</a><a href="galeria.html">Galería</a><a href="{BOOKING_URL}" target="_blank" rel="noopener">Reservar cita</a><a href="contacto.html">Contacto</a></div>
 </div>
 <div class="legal">© 2026 Luluca Nails · Fuenlabrada · Reservas gestionadas con Lanzo · Aviso legal · Privacidad</div>
 </footer>
@@ -141,7 +143,7 @@ def mobilebar():
     c=CLIENT
     return f"""<div class="mobile-book">
   <a href="{c['whatsapp']}" target="_blank" rel="noopener" class="btn btn-wa call" aria-label="WhatsApp">{WA_ICON}</a>
-  <a href="index.html#reservar" class="btn btn-primary">Reservar cita</a>
+  <a href="{BOOKING_URL}" target="_blank" rel="noopener" class="btn btn-primary">Reservar cita</a>
 </div>
 """
 
@@ -215,7 +217,7 @@ def build_index():
     <h1>Uñas <em>sanas</em>,<br>cuidadas al detalle.</h1>
     <p class="lead">Manicura, nail art, cejas y pestañas con técnicas profesionales y un trato cercano. Tu momento de belleza, reservado en un minuto.</p>
     <div class="hero-actions">
-      <a href="#reservar" class="btn btn-gold">{CAL_ICON} Reservar cita</a>
+      <a href="{BOOKING_URL}" target="_blank" rel="noopener" class="btn btn-gold">{CAL_ICON} Reservar cita</a>
       <a href="servicios.html" class="btn btn-ghost">Ver servicios</a>
     </div>
     <div class="hero-trust"><span class="stars">★★★★★</span><span><b style="color:var(--forest)">Excelente</b> · 4,7 · 127 reseñas en Google</span></div>
@@ -254,7 +256,7 @@ def build_index():
   <div class="booking-copy">
     <span class="eyebrow">Reserva online</span>
     <h2>Elige día y hora en un minuto</h2>
-    <p>Sin llamadas ni esperas. Consulta la disponibilidad real del salón de <b data-locname style="color:var(--forest)">Fuenlabrada</b> y reserva desde aquí mismo.</p>
+    <p>Sin llamadas ni esperas. Consulta la disponibilidad real del salón de <b style="color:var(--forest)">Fuenlabrada</b> y reserva online en un clic.</p>
     <ul>
       <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> Disponibilidad en tiempo real</li>
       <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> Recordatorio automático de tu cita</li>
@@ -264,13 +266,10 @@ def build_index():
   </div>
   <div class="cal">
     <span class="cal-badge">Reservas · Lanzo</span>
-    <h4>Salón de <span data-locname>Fuenlabrada</span></h4>
-    <div class="cal-title">Agosto 2026</div>
-    <div class="dow"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
-    <div class="days">{days}</div>
-    <div class="slots"><div class="slabel">Martes 12 de agosto · elige tu hora</div><div class="slot-row"><span class="slot dim">10:00</span><span class="slot">10:30</span><span class="slot on">11:30</span><span class="slot">12:30</span><span class="slot">17:00</span><span class="slot">18:00</span><span class="slot">19:00</span></div></div>
-    <a href="{c['whatsapp']}" target="_blank" rel="noopener" class="btn btn-primary">Confirmar reserva · 11:30</a>
-    <div class="cal-note">Calendario de muestra. La reserva real se activa con la agenda de Lanzo.</div>
+    <h4>Reserva online 24/7</h4>
+    <p style="color:var(--muted);margin:8px 0 20px;line-height:1.5">Consulta la disponibilidad real de <b style="color:var(--forest)">Luluca Nails Fuenlabrada</b> y confirma tu cita al instante en la agenda del salón.</p>
+    <a href="{BOOKING_URL}" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;justify-content:center">{CAL_ICON} Reservar cita ahora</a>
+    <div class="cal-note">Se abre la página de reservas de tu salón · confirmación inmediata y recordatorio automático.</div>
   </div>
 </div></section>
 
@@ -297,7 +296,7 @@ def build_index():
   <div class="head"><span class="eyebrow">Dónde estamos</span><h2>Nuestro salón en Fuenlabrada</h2></div>
   <p class="subnote">Estamos en el centro de Fuenlabrada. Ven a vernos o reserva tu cita online.</p>
   <div class="loc-grid">
-    <div class="loc"><div class="map"><iframe loading="lazy" src="https://www.google.com/maps?q=Calle%20Escocia%201,%20Fuenlabrada&output=embed"></iframe></div><div class="body"><span class="tag-here">Salón principal</span><h3>Fuenlabrada</h3><div class="info"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> {c['fuen_addr']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg> {c['phone_display']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> {c['fuen_hours']}</div></div><div class="actions"><a href="#reservar" class="btn btn-primary" onclick="setLocale('fuen')">Reservar aquí</a><a href="{c['fuen_maps']}" target="_blank" rel="noopener" class="btn btn-ghost">Cómo llegar</a></div></div></div>
+    <div class="loc"><div class="map"><iframe loading="lazy" src="https://www.google.com/maps?q=Calle%20Escocia%201,%20Fuenlabrada&output=embed"></iframe></div><div class="body"><span class="tag-here">Salón principal</span><h3>Fuenlabrada</h3><div class="info"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> {c['fuen_addr']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg> {c['phone_display']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> {c['fuen_hours']}</div></div><div class="actions"><a href="{BOOKING_URL}" target="_blank" rel="noopener" class="btn btn-primary">Reservar aquí</a><a href="{c['fuen_maps']}" target="_blank" rel="noopener" class="btn btn-ghost">Cómo llegar</a></div></div></div>
   </div>
 </div></section>
 {footer()}{mobilebar()}{scripts()}"""
@@ -324,7 +323,7 @@ def build_servicios():
   <span class="chip" onclick="openCat('gemas')">Gemas dentales</span>
 </div></div>
 {catalog}
-<section class="reserva-band" id="reserva"><span class="eyebrow" style="color:var(--gold-2)">Reserva online</span><h2>¿Lo tienes claro? Reserva en un minuto</h2><p>Elige día y hora en la agenda del salón de <span data-locname>Fuenlabrada</span>. Sin llamadas ni esperas.</p><a href="index.html#reservar" class="btn btn-gold">Ir a reservar</a></section>
+<section class="reserva-band" id="reserva"><span class="eyebrow" style="color:var(--gold-2)">Reserva online</span><h2>¿Lo tienes claro? Reserva en un minuto</h2><p>Elige día y hora en la agenda del salón de <span data-locname>Fuenlabrada</span>. Sin llamadas ni esperas.</p><a href="{BOOKING_URL}" target="_blank" rel="noopener" class="btn btn-gold">Ir a reservar</a></section>
 <div class="disc">Precios y servicios orientativos según la lista del salón. Las duraciones son aproximadas y pueden variar según el estado de la uña. Consulta cualquier duda antes de tu cita.</div>
 {footer()}{mobilebar()}{scripts()}"""
     return head("Servicios y precios — Luluca Nails","Carta completa de servicios y precios de Luluca Nails: manicura, pedicura, uñas esculpidas, nail art, pestañas, cejas, depilación y gemas dentales.")+body
@@ -336,7 +335,7 @@ def build_galeria():
     body=f"""{header('galeria')}
 <section class="page-hero"><span class="eyebrow">Nuestro trabajo</span><h1>Galería</h1><p>Diseños reales hechos en Luluca. Toca una foto para verla más grande.</p></section>
 <section class="gallery sec-pad" style="background:var(--cream)"><div class="wrap"><div class="gal-grid">{tiles}</div>
-<p class="center" style="margin-top:34px"><a href="index.html#reservar" class="btn btn-primary">Reserva tu cita</a></p></div></section>
+<p class="center" style="margin-top:34px"><a href="{BOOKING_URL}" target="_blank" rel="noopener" class="btn btn-primary">Reserva tu cita</a></p></div></section>
 {footer()}{mobilebar()}{scripts()}"""
     return head("Galería — Luluca Nails","Galería de trabajos reales de Luluca Nails: nail art, manicura, diseños y más.")+body
 
