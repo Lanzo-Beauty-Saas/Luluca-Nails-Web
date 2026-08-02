@@ -224,18 +224,30 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
     }).join('');
   }).catch(function(){});
 })();
-// ===== Widget de reservas Lanzo (embebido, la clienta no sale de la web) =====
+// ===== Widget de reservas Lanzo (embebido) v2: grupos + mañana/tarde =====
 (function(){
   var root=document.getElementById('lz-book'); if(!root) return;
   var SLUG=root.dataset.slug, API=root.dataset.api, WA=root.dataset.wa||'#';
-  var st={service:null,date:null,slot:null,employeeId:null,_slots:[],_services:[]};
+  var st={service:null,date:null,slot:null,employeeId:null,_slots:[],_services:[],_period:{m:[],t:[]}};
   var view={y:0,m:0};
   var MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var GROUPS=[{k:'unas',label:'Uñas y manicura'},{k:'pies',label:'Pies y pedicura'},{k:'cejas',label:'Cejas, labio y depilación'},{k:'pest',label:'Pestañas'},{k:'gema',label:'Gemas dentales'}];
+  function groupOf(name){var n=(name||'').toLowerCase();
+    if(n.indexOf('pestañ')>-1||n.indexOf('lifting')>-1||n.indexOf('tinte')>-1) return 'pest';
+    if(n.indexOf('ceja')>-1||n.indexOf('labio')>-1||n.indexOf('laminado')>-1||n.indexOf('frente')>-1||n.indexOf('mejill')>-1||n.indexOf('patill')>-1||n.indexOf('cara completa')>-1) return 'cejas';
+    if(n.indexOf('gema')>-1) return 'gema';
+    if(n.indexOf('pedicura')>-1||n.indexOf('(pies)')>-1||n.indexOf('pies')>-1||n.indexOf('/ pie')>-1) return 'pies';
+    return 'unas';}
+
   var css=[
-   '#lz-book .lz-h{font-family:"Cormorant Garamond",serif;color:var(--forest);font-size:22px;margin:4px 0 12px}',
+   '#lz-book .lz-h{font-family:"Cormorant Garamond",serif;color:var(--forest);font-size:23px;margin:4px 0 12px}',
    '#lz-book label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;font-weight:600}',
    '#lz-book select,#lz-book input{width:100%;padding:11px 12px;border:1px solid #e3e0d8;border-radius:12px;font:inherit;background:#fff;color:var(--forest);box-sizing:border-box}',
    '#lz-book .lz-meta{font-size:13px;color:var(--muted);margin-top:6px}',
+   '.lz-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}',
+   '.lz-chip{padding:8px 14px;border:1px solid #e3e0d8;border-radius:999px;background:#fff;cursor:pointer;font:inherit;font-size:13.5px;color:var(--forest)}',
+   '.lz-chip.sel{background:var(--forest);color:#fff;border-color:var(--forest)}',
+   '.lz-chip:disabled{opacity:.4;cursor:default}',
    '.lz-calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}',
    '.lz-calhead b{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:18px;color:var(--forest);text-transform:capitalize}',
    '.lz-nav{border:none;background:#f0efe9;width:32px;height:32px;border-radius:9px;cursor:pointer;font-size:16px;color:var(--forest)}',
@@ -263,6 +275,7 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
   function esc(s){s=''+(s||'');return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function eur(n){n=Number(n)||0;return (Math.round(n*100)/100).toString().replace('.',',')+' €';}
   function fmt(iso){return new Date(iso).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'});}
+  function hourOf(iso){return parseInt(new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',hour12:false,timeZone:'Europe/Madrid'}).slice(0,2),10);}
   function todayYMD(){return new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Madrid'});}
   function ymd(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
   function api(p){return fetch(API+p).then(function(r){if(!r.ok){var e=new Error('x');e.status=r.status;throw e;}return r.json();});}
@@ -272,18 +285,29 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
 
   root.innerHTML=
    '<span class="cal-badge">Reservas 24/7 con Lanzo</span>'+
-   '<div class="lz-h">Reserva tu cita</div>'+
-   '<div id="lz-step-svc"><label>1 · Elige servicio</label><select id="lz-svc"><option value="">Cargando servicios…</option></select><div class="lz-meta" id="lz-svcmeta"></div></div>'+
+   '<div class="lz-h">Reserva tu cita en 1 minuto</div>'+
+   '<div id="lz-step-svc"><label>1 · Tipo de servicio</label><div id="lz-groups" class="lz-chips"><span class="lz-msg">Cargando…</span></div><select id="lz-svc" disabled><option value="">Elige un grupo arriba…</option></select><div class="lz-meta" id="lz-svcmeta"></div></div>'+
    '<div id="lz-step-date" hidden><label>2 · Elige día</label><div id="lz-cal"></div></div>'+
-   '<div id="lz-step-time" hidden><label>3 · Elige hora</label><div id="lz-times"></div></div>'+
+   '<div id="lz-step-time" hidden><label>3 · Elige hora</label><div id="lz-period" class="lz-chips"></div><div id="lz-times"></div></div>'+
    '<div id="lz-step-emp" hidden><label>4 · Elige profesional</label><div id="lz-emps"></div></div>'+
    '<div id="lz-step-form" hidden><label>5 · Tus datos</label><input id="lz-name" placeholder="Nombre y apellidos" autocomplete="name"><div style="height:8px"></div><input id="lz-phone" placeholder="Teléfono móvil" inputmode="tel" autocomplete="tel"><button id="lz-confirm" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">Confirmar reserva</button><div class="lz-err" id="lz-err"></div></div>'+
    '<div class="lz-foot">Confirmación inmediata y recordatorio automático. ¿Prefieres WhatsApp? <a href="'+WA+'" target="_blank" rel="noopener">Escríbenos</a></div>';
 
   api('/salon/'+SLUG).then(function(s){
-    var svcs=(s&&s.services)||[]; st._services=svcs;
-    g('lz-svc').innerHTML='<option value="">Elige un servicio…</option>'+svcs.map(function(v){return '<option value="'+v.id+'">'+esc(v.name)+'  ·  '+(v.durationMin||0)+' min  ·  '+eur(v.priceEur)+'</option>';}).join('');
-  }).catch(function(){ g('lz-svc').innerHTML='<option value="">No se pudieron cargar los servicios</option>'; });
+    st._services=(s&&s.services)||[];
+    var counts={};
+    st._services.forEach(function(v){ v._g=groupOf(v.name); counts[v._g]=(counts[v._g]||0)+1; });
+    var chips=GROUPS.filter(function(gr){return counts[gr.k];}).map(function(gr){return '<button type="button" class="lz-chip" data-g="'+gr.k+'">'+gr.label+' ('+counts[gr.k]+')</button>';}).join('');
+    g('lz-groups').innerHTML=chips||'<span class="lz-msg">Sin servicios.</span>';
+  }).catch(function(){ g('lz-groups').innerHTML='<span class="lz-msg">No se pudieron cargar los servicios.</span>'; });
+
+  function selectGroup(k){
+    [...g('lz-groups').children].forEach(function(b){ if(b.dataset) b.classList.toggle('sel', b.dataset.g===k); });
+    var list=st._services.filter(function(v){return v._g===k;});
+    var sel=g('lz-svc'); sel.disabled=false;
+    sel.innerHTML='<option value="">Elige el servicio…</option>'+list.map(function(v){return '<option value="'+v.id+'">'+esc(v.name)+'  ·  '+(v.durationMin||0)+' min  ·  '+eur(v.priceEur)+'</option>';}).join('');
+    st.service=null; g('lz-svcmeta').textContent=''; hide('date'); hide('time'); hide('emp'); hide('form');
+  }
 
   function renderCal(){
     var today=todayYMD();
@@ -299,12 +323,23 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
 
   function loadTimes(ds){
     st.date=ds; st.slot=null; st.employeeId=null; hide('emp'); hide('form');
-    show('time'); g('lz-times').innerHTML='<div class="lz-msg">Buscando horas libres…</div>'; renderCal();
+    show('time'); g('lz-period').innerHTML=''; g('lz-times').innerHTML='<div class="lz-msg">Buscando horas libres…</div>'; renderCal();
     api('/availability?salonSlug='+SLUG+'&date='+ds+'&serviceId='+st.service.id).then(function(a){
       var slots=(a&&a.slots)||[]; st._slots=slots;
-      if(!slots.length){ g('lz-times').innerHTML='<div class="lz-msg">No hay horas libres ese día. Prueba con otro.</div>'; return; }
-      g('lz-times').innerHTML=slots.map(function(s,i){return '<button type="button" class="lz-time" data-i="'+i+'">'+fmt(s.startsAt)+'</button>';}).join('');
-    }).catch(function(){ g('lz-times').innerHTML='<div class="lz-msg">No se pudo cargar la disponibilidad. Prueba de nuevo.</div>'; });
+      if(!slots.length){ g('lz-period').innerHTML=''; g('lz-times').innerHTML='<div class="lz-msg">No hay horas libres ese día. Prueba con otro.</div>'; return; }
+      var m=[],tt=[]; slots.forEach(function(s,i){ (hourOf(s.startsAt)<14?m:tt).push(i); });
+      st._period={m:m,t:tt};
+      g('lz-period').innerHTML='<button type="button" class="lz-chip" data-p="m"'+(m.length?'':' disabled')+'>Mañana ('+m.length+')</button><button type="button" class="lz-chip" data-p="t"'+(tt.length?'':' disabled')+'>Tarde ('+tt.length+')</button>';
+      g('lz-times').innerHTML='<div class="lz-msg">Elige mañana o tarde.</div>';
+      if(m.length && !tt.length) showPeriod('m'); else if(tt.length && !m.length) showPeriod('t');
+    }).catch(function(){ g('lz-period').innerHTML=''; g('lz-times').innerHTML='<div class="lz-msg">No se pudo cargar la disponibilidad. Prueba de nuevo.</div>'; });
+  }
+
+  function showPeriod(p){
+    [...g('lz-period').children].forEach(function(b){ if(b.dataset) b.classList.toggle('sel', b.dataset.p===p); });
+    var idxs=(p==='m')?st._period.m:st._period.t;
+    g('lz-times').innerHTML=idxs.map(function(i){return '<button type="button" class="lz-time" data-i="'+i+'">'+fmt(st._slots[i].startsAt)+'</button>';}).join('');
+    st.slot=null; st.employeeId=null; hide('emp'); hide('form');
   }
 
   function pickTime(i){
@@ -352,6 +387,7 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
 
   root.addEventListener('click', function(ev){
     var t=ev.target.closest('button'); if(!t) return;
+    if(t.classList.contains('lz-chip')){ if(t.dataset.p){ if(!t.disabled) showPeriod(t.dataset.p); } else if(t.dataset.g){ selectGroup(t.dataset.g); } return; }
     if(t.id==='lz-prev'){ var a=new Date(view.y,view.m-1,1); view.y=a.getFullYear(); view.m=a.getMonth(); renderCal(); return; }
     if(t.id==='lz-next'){ var b=new Date(view.y,view.m+1,1); view.y=b.getFullYear(); view.m=b.getMonth(); renderCal(); return; }
     if(t.classList.contains('lz-day') && !t.disabled){ loadTimes(t.dataset.d); return; }
