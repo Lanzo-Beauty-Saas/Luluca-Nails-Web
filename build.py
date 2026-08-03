@@ -173,7 +173,7 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
     }).join('');
   }).catch(function(){});
 })();
-// ===== Widget de reservas Lanzo (embebido) v2: grupos + mañana/tarde =====
+// ===== Widget de reservas Lanzo (embebido) v3: calendario visible + desplegable con grupos =====
 (function(){
   var root=document.getElementById('lz-book'); if(!root) return;
   var SLUG=root.dataset.slug, API=root.dataset.api, WA=root.dataset.wa||'#';
@@ -189,34 +189,39 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
     return 'unas';}
 
   var css=[
-   '#lz-book .lz-h{font-family:"Cormorant Garamond",serif;color:var(--forest);font-size:23px;margin:4px 0 12px}',
-   '#lz-book label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;font-weight:600}',
-   '#lz-book select,#lz-book input{width:100%;padding:11px 12px;border:1px solid #e3e0d8;border-radius:12px;font:inherit;background:#fff;color:var(--forest);box-sizing:border-box}',
+   '#lz-book .lz-h{font-family:"Cormorant Garamond",serif;color:var(--forest);font-size:24px;margin:2px 0 14px}',
+   '#lz-book label{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--forest);margin:18px 0 9px;font-weight:700}',
+   '#lz-book label:first-of-type{margin-top:6px}',
+   '#lz-book select,#lz-book input{width:100%;padding:12px 12px;border:1px solid #d8d5cc;border-radius:12px;font:inherit;background:#fff;color:var(--forest);box-sizing:border-box}',
+   '#lz-book optgroup{font-weight:700;color:var(--forest)}',
    '#lz-book .lz-meta{font-size:13px;color:var(--muted);margin-top:6px}',
    '.lz-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}',
-   '.lz-chip{padding:8px 14px;border:1px solid #e3e0d8;border-radius:999px;background:#fff;cursor:pointer;font:inherit;font-size:13.5px;color:var(--forest)}',
+   '.lz-chip{padding:9px 16px;border:1px solid #d8d5cc;border-radius:999px;background:#fff;cursor:pointer;font:inherit;font-size:14px;color:var(--forest)}',
    '.lz-chip.sel{background:var(--forest);color:#fff;border-color:var(--forest)}',
    '.lz-chip:disabled{opacity:.4;cursor:default}',
    '.lz-calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}',
-   '.lz-calhead b{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:18px;color:var(--forest);text-transform:capitalize}',
-   '.lz-nav{border:none;background:#f0efe9;width:32px;height:32px;border-radius:9px;cursor:pointer;font-size:16px;color:var(--forest)}',
+   '.lz-calhead b{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:19px;color:var(--forest);text-transform:capitalize}',
+   '.lz-nav{border:none;background:#eceae3;width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:16px;color:var(--forest)}',
    '.lz-nav:disabled{opacity:.35;cursor:default}',
-   '.lz-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px}',
-   '.lz-dow span{text-align:center;font-size:11px;color:var(--muted)}',
-   '.lz-days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}',
-   '.lz-day{padding:9px 0;border:1px solid transparent;border-radius:9px;background:#f7f6f1;cursor:pointer;font:inherit;color:var(--forest)}',
-   '.lz-day.off{opacity:.3;background:transparent;cursor:default}',
-   '.lz-day.sel{background:var(--forest);color:#fff}',
+   '.lz-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}',
+   '.lz-dow span{text-align:center;font-size:11px;color:var(--muted);font-weight:600}',
+   '.lz-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}',
+   '.lz-day{padding:11px 0;border:1px solid #ece9e2;border-radius:10px;background:#faf9f5;cursor:pointer;font:inherit;font-size:15px;color:var(--forest)}',
+   '.lz-day:hover:not(.off){border-color:var(--forest)}',
+   '.lz-day.off{opacity:.32;background:transparent;border-color:transparent;cursor:default}',
+   '.lz-day.sel{background:var(--forest);color:#fff;border-color:var(--forest)}',
+   '.lz-hint{color:var(--gold);font-size:13px;margin-top:10px;min-height:16px;font-weight:600}',
    '#lz-times,#lz-emps{display:flex;flex-wrap:wrap;gap:8px}',
-   '.lz-time,.lz-emp{padding:9px 14px;border:1px solid #e3e0d8;border-radius:10px;background:#fff;cursor:pointer;font:inherit;color:var(--forest)}',
+   '.lz-time,.lz-emp{padding:10px 15px;border:1px solid #d8d5cc;border-radius:10px;background:#fff;cursor:pointer;font:inherit;color:var(--forest)}',
+   '.lz-time:hover,.lz-emp:hover{border-color:var(--forest)}',
    '.lz-time.sel,.lz-emp.sel{background:var(--forest);color:#fff;border-color:var(--forest)}',
    '.lz-msg{color:var(--muted);font-size:14px;padding:6px 0}',
    '.lz-err{color:#b3261e;font-size:13px;margin-top:8px;min-height:16px}',
-   '.lz-foot{margin-top:16px;font-size:13px;color:var(--muted)}',
+   '.lz-foot{margin-top:18px;font-size:13px;color:var(--muted)}',
    '.lz-foot a{color:var(--forest);text-decoration:underline}',
    '.lz-ok{text-align:center;padding:10px 0}',
-   '.lz-check{width:52px;height:52px;border-radius:50%;background:var(--forest);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;margin:6px auto 12px}',
-   '.lz-ok h4{font-family:"Cormorant Garamond",serif;color:var(--forest);font-size:24px;margin-bottom:8px}',
+   '.lz-check{width:54px;height:54px;border-radius:50%;background:var(--forest);color:#fff;font-size:27px;display:flex;align-items:center;justify-content:center;margin:6px auto 12px}',
+   '.lz-ok h4{font-family:"Cormorant Garamond",serif;color:var(--forest);font-size:25px;margin-bottom:8px}',
    '.lz-ok p{color:var(--muted);margin-bottom:10px}'
   ].join('');
   var stl=document.createElement('style'); stl.textContent=css; document.head.appendChild(stl);
@@ -234,29 +239,25 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
 
   root.innerHTML=
    '<span class="cal-badge">Reservas 24/7 con Lanzo</span>'+
-   '<div class="lz-h">Reserva tu cita en 1 minuto</div>'+
-   '<div id="lz-step-svc"><label>1 · Tipo de servicio</label><div id="lz-groups" class="lz-chips"><span class="lz-msg">Cargando…</span></div><select id="lz-svc" disabled><option value="">Elige un grupo arriba…</option></select><div class="lz-meta" id="lz-svcmeta"></div></div>'+
-   '<div id="lz-step-date" hidden><label>2 · Elige día</label><div id="lz-cal"></div></div>'+
-   '<div id="lz-step-time" hidden><label>3 · Elige hora</label><div id="lz-period" class="lz-chips"></div><div id="lz-times"></div></div>'+
+   '<div class="lz-h">Reserva tu cita</div>'+
+   '<div id="lz-step-svc"><label>1 · Elige tu servicio</label><select id="lz-svc"><option value="">Cargando servicios…</option></select><div class="lz-meta" id="lz-svcmeta"></div></div>'+
+   '<div id="lz-step-date"><label>2 · Elige el día</label><div id="lz-cal"></div><div id="lz-hint" class="lz-hint"></div></div>'+
+   '<div id="lz-step-time" hidden><label>3 · Elige la hora</label><div id="lz-period" class="lz-chips"></div><div id="lz-times"></div></div>'+
    '<div id="lz-step-emp" hidden><label>4 · Elige profesional</label><div id="lz-emps"></div></div>'+
    '<div id="lz-step-form" hidden><label>5 · Tus datos</label><input id="lz-name" placeholder="Nombre y apellidos" autocomplete="name"><div style="height:8px"></div><input id="lz-phone" placeholder="Teléfono móvil" inputmode="tel" autocomplete="tel"><button id="lz-confirm" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">Confirmar reserva</button><div class="lz-err" id="lz-err"></div></div>'+
    '<div class="lz-foot">Confirmación inmediata y recordatorio automático. ¿Prefieres WhatsApp? <a href="'+WA+'" target="_blank" rel="noopener">Escríbenos</a></div>';
 
+  renderCal();
+
   api('/salon/'+SLUG).then(function(s){
     st._services=(s&&s.services)||[];
-    var counts={};
-    st._services.forEach(function(v){ v._g=groupOf(v.name); counts[v._g]=(counts[v._g]||0)+1; });
-    var chips=GROUPS.filter(function(gr){return counts[gr.k];}).map(function(gr){return '<button type="button" class="lz-chip" data-g="'+gr.k+'">'+gr.label+' ('+counts[gr.k]+')</button>';}).join('');
-    g('lz-groups').innerHTML=chips||'<span class="lz-msg">Sin servicios.</span>';
-  }).catch(function(){ g('lz-groups').innerHTML='<span class="lz-msg">No se pudieron cargar los servicios.</span>'; });
-
-  function selectGroup(k){
-    [...g('lz-groups').children].forEach(function(b){ if(b.dataset) b.classList.toggle('sel', b.dataset.g===k); });
-    var list=st._services.filter(function(v){return v._g===k;});
-    var sel=g('lz-svc'); sel.disabled=false;
-    sel.innerHTML='<option value="">Elige el servicio…</option>'+list.map(function(v){return '<option value="'+v.id+'">'+esc(v.name)+'  ·  '+(v.durationMin||0)+' min  ·  '+eur(v.priceEur)+'</option>';}).join('');
-    st.service=null; g('lz-svcmeta').textContent=''; hide('date'); hide('time'); hide('emp'); hide('form');
-  }
+    var byG={}; st._services.forEach(function(v){ v._g=groupOf(v.name); (byG[v._g]=byG[v._g]||[]).push(v); });
+    var html='<option value="">Elige tu servicio…</option>';
+    GROUPS.forEach(function(gr){ var list=byG[gr.k]; if(!list||!list.length) return;
+      html+='<optgroup label="'+gr.label+'">'+list.map(function(v){return '<option value="'+v.id+'">'+esc(v.name)+' · '+(v.durationMin||0)+' min · '+eur(v.priceEur)+'</option>';}).join('')+'</optgroup>';
+    });
+    g('lz-svc').innerHTML=html;
+  }).catch(function(){ g('lz-svc').innerHTML='<option value="">No se pudieron cargar los servicios</option>'; });
 
   function renderCal(){
     var today=todayYMD();
@@ -270,9 +271,15 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
     g('lz-cal').innerHTML=h+'</div>';
   }
 
+  function pickDay(ds){
+    st.date=ds; st.slot=null; st.employeeId=null; renderCal();
+    if(!st.service){ g('lz-hint').textContent='Elige primero tu servicio arriba ↑'; hide('time'); hide('emp'); hide('form'); try{g('lz-svc').focus();}catch(e){} return; }
+    g('lz-hint').textContent=''; loadTimes(ds);
+  }
+
   function loadTimes(ds){
-    st.date=ds; st.slot=null; st.employeeId=null; hide('emp'); hide('form');
-    show('time'); g('lz-period').innerHTML=''; g('lz-times').innerHTML='<div class="lz-msg">Buscando horas libres…</div>'; renderCal();
+    st.slot=null; st.employeeId=null; hide('emp'); hide('form');
+    show('time'); g('lz-period').innerHTML=''; g('lz-times').innerHTML='<div class="lz-msg">Buscando horas libres…</div>';
     api('/availability?salonSlug='+SLUG+'&date='+ds+'&serviceId='+st.service.id).then(function(a){
       var slots=(a&&a.slots)||[]; st._slots=slots;
       if(!slots.length){ g('lz-period').innerHTML=''; g('lz-times').innerHTML='<div class="lz-msg">No hay horas libres ese día. Prueba con otro.</div>'; return; }
@@ -328,18 +335,19 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
 
   g('lz-svc').addEventListener('change', function(){
     var id=this.value; st.service=(st._services||[]).filter(function(v){return v.id===id;})[0]||null;
-    st.date=null; st.slot=null; st.employeeId=null; hide('time'); hide('emp'); hide('form');
-    if(!st.service){ g('lz-svcmeta').textContent=''; hide('date'); return; }
+    st.slot=null; st.employeeId=null; hide('time'); hide('emp'); hide('form');
+    if(!st.service){ g('lz-svcmeta').textContent=''; return; }
     g('lz-svcmeta').textContent=(st.service.durationMin||0)+' min · '+eur(st.service.priceEur);
-    view.y=0; renderCal(); show('date');
+    g('lz-hint').textContent='';
+    if(st.date) loadTimes(st.date);
   });
 
   root.addEventListener('click', function(ev){
     var t=ev.target.closest('button'); if(!t) return;
-    if(t.classList.contains('lz-chip')){ if(t.dataset.p){ if(!t.disabled) showPeriod(t.dataset.p); } else if(t.dataset.g){ selectGroup(t.dataset.g); } return; }
+    if(t.classList.contains('lz-chip')){ if(t.dataset.p && !t.disabled) showPeriod(t.dataset.p); return; }
     if(t.id==='lz-prev'){ var a=new Date(view.y,view.m-1,1); view.y=a.getFullYear(); view.m=a.getMonth(); renderCal(); return; }
     if(t.id==='lz-next'){ var b=new Date(view.y,view.m+1,1); view.y=b.getFullYear(); view.m=b.getMonth(); renderCal(); return; }
-    if(t.classList.contains('lz-day') && !t.disabled){ loadTimes(t.dataset.d); return; }
+    if(t.classList.contains('lz-day') && !t.disabled){ pickDay(t.dataset.d); return; }
     if(t.classList.contains('lz-time')){ pickTime(parseInt(t.dataset.i,10)); return; }
     if(t.classList.contains('lz-emp')){ pickEmp(t.dataset.e); return; }
     if(t.id==='lz-confirm'){ ev.preventDefault(); doBooking(); return; }
@@ -409,11 +417,14 @@ def build_index():
   <div class="head"><span class="eyebrow">Nuestros servicios</span><h2>Todo para tus manos, tu mirada y tu piel</h2><p>Siete familias de servicios. Toca la que te interese para ver todos los detalles y precios.</p></div>
   <div class="cat-grid">{cat_html}</div>
 </div></section>
-<section class="booking sec-pad" id="reservar" style="background:#eef1ec"><div class="wrap">
-  <div class="booking-copy">
+<section class="booking sec-pad" id="reservar" style="background:#eef1ec"><div class="wrap" style="align-items:start">
+  <div class="booking-head" style="grid-column:1/-1;text-align:center;max-width:660px;margin:0 auto 6px">
     <span class="eyebrow">Reserva online</span>
-    <h2>Elige día y hora en un minuto</h2>
-    <p>Sin llamadas ni esperas. Elige servicio, día, hora y profesional aquí mismo, sin salir de la web.</p>
+    <h2 style="font-size:clamp(32px,4.6vw,48px);color:var(--forest);margin:12px 0 10px">Reserva tu cita en 1 minuto</h2>
+    <p style="color:var(--muted)">Elige tu servicio y el calendario te muestra al momento los días con hueco. Sin llamadas ni esperas.</p>
+  </div>
+  <div class="booking-copy">
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:27px;color:var(--forest);margin-bottom:14px">En 3 pasos, cita confirmada</h3>
     <ul>
       <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> Disponibilidad en tiempo real</li>
       <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> Recordatorio automático de tu cita</li>
