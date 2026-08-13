@@ -16,7 +16,19 @@ CLIENT = {
   "fuen_addr": "Calle Escocia 1, Fuenlabrada, Madrid",
   "fuen_maps": "https://www.google.com/maps/search/?api=1&query=Calle%20Escocia%201%20Fuenlabrada",
   "fuen_hours": "L-V 09:00–20:00 · S 09:00–14:00",
+  # Humanes (segundo local). WhatsApp propio pendiente: de momento usa el de la marca.
+  "huma_addr": "Avenida Campo Hermoso 44, Humanes de Madrid",
+  "huma_maps": "https://www.google.com/maps/search/?api=1&query=Avenida%20Campo%20Hermoso%2044%20Humanes%20de%20Madrid",
+  "huma_hours": "L-V 09:00–20:00",
+  "huma_phone_display": "625 17 97 79",
+  "huma_tel": "+34625179779",
 }
+
+# Slugs de reservas (cada local a su cuenta de Lanzo)
+SLUG_FUEN = "luluca-nails-fuenlabrada"
+SLUG_HUMA = "luluca-nails-humanes"
+# WhatsApp por local (Humanes hereda el de la marca hasta tener número propio)
+CLIENT["huma_whatsapp"] = CLIENT["whatsapp"]
 
 BOOKING_URL = "https://app.lanzo.es/luluca-nails-fuenlabrada"
 
@@ -95,7 +107,7 @@ def head(title, desc):
 <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body data-locale="fuen">
-<div style="background:var(--forest);color:#fff;text-align:center;font-size:13.5px;padding:9px 16px;line-height:1.35">Hemos estrenado página web — es el mismo salón de siempre: <b style="color:var(--gold-2)">Luluca Nails · Fuenlabrada</b>. ¡Gracias por seguir confiando en nosotras!</div>
+<div style="background:var(--forest);color:#fff;text-align:center;font-size:13.5px;padding:9px 16px;line-height:1.35">El mismo Luluca Nails de siempre, ahora también en <b style="color:var(--gold-2)">Humanes de Madrid</b> · Reserva online en Fuenlabrada o Humanes</div>
 """
 
 def header(active):
@@ -124,7 +136,7 @@ def footer():
     return f"""<footer id="contacto-foot"><div class="fw">
   <div>
     <img class="foot-logo" src="assets/img/logo-light.png" alt="Luluca Nails">
-    <p class="about">Centro de uñas, cejas y belleza en Fuenlabrada. Uñas sanas, 100% veganas y de larga duración, cuidando cada detalle para hacerte brillar.</p>
+    <p class="about">Centro de uñas, cejas y belleza en Fuenlabrada y Humanes de Madrid. Uñas sanas, 100% veganas y de larga duración, cuidando cada detalle para hacerte brillar.</p>
     <div class="social">
       <a href="{c['instagram']}" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
       <a href="{c['tiktok']}" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 4v9.5a3.5 3.5 0 1 1-3-3.5"/><path d="M15 6a4 4 0 0 0 4 4"/></svg></a>
@@ -133,9 +145,10 @@ def footer():
     </div>
   </div>
   <div><h5>Salón Fuenlabrada</h5><a href="{c['fuen_maps']}" target="_blank" rel="noopener">{c['fuen_addr']}</a><a href="tel:{c['tel']}">{c['phone_display']}</a><a href="mailto:{c['email']}">{c['email']}</a><span style="color:#a9b6a9">{c['fuen_hours']}</span></div>
+  <div><h5>Salón Humanes</h5><a href="{c['huma_maps']}" target="_blank" rel="noopener">{c['huma_addr']}</a><a href="tel:{c['huma_tel']}">{c['huma_phone_display']}</a><span style="color:#a9b6a9">{c['huma_hours']}</span></div>
   <div><h5>Enlaces</h5><a href="servicios.html">Servicios y precios</a><a href="galeria.html">Galería</a><a href="index.html#reservar">Reservar cita</a><a href="contacto.html">Contacto</a></div>
 </div>
-<div class="legal">© 2026 Luluca Nails · Fuenlabrada · Reservas gestionadas con Lanzo · Aviso legal · Privacidad</div>
+<div class="legal">© 2026 Luluca Nails · Fuenlabrada y Humanes · Reservas gestionadas con Lanzo · <a href="aviso-legal.html">Aviso legal</a> · <a href="privacidad.html">Privacidad</a> · <a href="cookies.html">Cookies</a></div>
 </footer>
 """
 
@@ -152,6 +165,8 @@ def scripts():
 <script>
 var NAMES={fuen:'Fuenlabrada',huma:'Humanes'};
 function setLocale(k){document.body.dataset.locale=k;document.querySelectorAll('[data-locname]').forEach(function(e){e.textContent=NAMES[k];});document.querySelectorAll('.seg-btn').forEach(function(b){b.classList.toggle('on',b.dataset.k===k);});}
+function lzSwitchLoc(btn){document.querySelectorAll('.lz-locbtn').forEach(function(b){b.classList.toggle('on',b===btn);});if(btn.dataset.k)setLocale(btn.dataset.k);if(window.__lzSwitch)window.__lzSwitch(btn.dataset.slug,btn.dataset.wa||'#');}
+function lzGoto(k){var b=document.querySelector('.lz-locbtn[data-k="'+k+'"]');if(b)lzSwitchLoc(b);}
 function toggleMenu(){document.getElementById('menu').classList.toggle('open');}
 function openCat(id){var d=document.getElementById(id);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}}
 function openLb(src){var lb=document.getElementById('lb');document.getElementById('lb-img').src=src;lb.classList.add('on');}
@@ -176,8 +191,8 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
 // ===== Widget de reservas Lanzo (embebido) v3: calendario visible + desplegable con grupos =====
 (function(){
   var root=document.getElementById('lz-book'); if(!root) return;
-  var SLUG=root.dataset.slug, API=root.dataset.api, WA=root.dataset.wa||'#';
-  var st={service:null,date:null,slot:null,employeeId:null,_slots:[],_services:[],_period:{m:[],t:[]}};
+  var API=root.dataset.api, SLUG='', WA='#';
+  var st={service:null,date:null,slot:null,employeeId:null,allowEmp:true,_slots:[],_services:[],_period:{m:[],t:[]}};
   var view={y:0,m:0};
   var MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   var GROUPS=[{k:'unas',label:'Uñas y manicura'},{k:'pies',label:'Pies y pedicura'},{k:'cejas',label:'Cejas, labio y depilación'},{k:'pest',label:'Pestañas'},{k:'gema',label:'Gemas dentales'}];
@@ -222,7 +237,9 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
    '.lz-ok{text-align:center;padding:10px 0}',
    '.lz-check{width:54px;height:54px;border-radius:50%;background:var(--forest);color:#fff;font-size:27px;display:flex;align-items:center;justify-content:center;margin:6px auto 12px}',
    '.lz-ok h4{font-family:"Cormorant Garamond",serif;color:var(--forest);font-size:25px;margin-bottom:8px}',
-   '.lz-ok p{color:var(--muted);margin-bottom:10px}'
+   '.lz-ok p{color:var(--muted);margin-bottom:10px}',
+   '.lz-locbtn{padding:9px 18px;border:1px solid #d8d5cc;border-radius:999px;background:#fff;cursor:pointer;font:inherit;font-size:14px;color:var(--forest)}',
+   '.lz-locbtn.on{background:var(--forest);color:#fff;border-color:var(--forest)}'
   ].join('');
   var stl=document.createElement('style'); stl.textContent=css; document.head.appendChild(stl);
 
@@ -237,27 +254,32 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
   function show(s){var e=g('lz-step-'+s); if(e) e.hidden=false;}
   function hide(s){var e=g('lz-step-'+s); if(e) e.hidden=true;}
 
-  root.innerHTML=
-   '<span class="cal-badge">Reservas 24/7 con Lanzo</span>'+
-   '<div class="lz-h">Reserva tu cita</div>'+
-   '<div id="lz-step-svc"><label>1 · Elige tu servicio</label><select id="lz-svc"><option value="">Cargando servicios…</option></select><div class="lz-meta" id="lz-svcmeta"></div></div>'+
-   '<div id="lz-step-date"><label>2 · Elige el día</label><div id="lz-cal"></div><div id="lz-hint" class="lz-hint"></div></div>'+
-   '<div id="lz-step-time" hidden><label>3 · Elige la hora</label><div id="lz-period" class="lz-chips"></div><div id="lz-times"></div></div>'+
-   '<div id="lz-step-emp" hidden><label>4 · Elige profesional</label><div id="lz-emps"></div></div>'+
-   '<div id="lz-step-form" hidden><label>5 · Tus datos</label><input id="lz-name" placeholder="Nombre y apellidos" autocomplete="name"><div style="height:8px"></div><input id="lz-phone" placeholder="Teléfono móvil" inputmode="tel" autocomplete="tel"><button id="lz-confirm" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">Confirmar reserva</button><div class="lz-err" id="lz-err"></div></div>'+
-   '<div class="lz-foot">Confirmación inmediata y recordatorio automático. ¿Prefieres WhatsApp? <a href="'+WA+'" target="_blank" rel="noopener">Escríbenos</a></div>';
-
-  renderCal();
-
-  api('/salon/'+SLUG).then(function(s){
-    st._services=(s&&s.services)||[];
-    var byG={}; st._services.forEach(function(v){ v._g=groupOf(v.name); (byG[v._g]=byG[v._g]||[]).push(v); });
-    var html='<option value="">Elige tu servicio…</option>';
-    GROUPS.forEach(function(gr){ var list=byG[gr.k]; if(!list||!list.length) return;
-      html+='<optgroup label="'+gr.label+'">'+list.map(function(v){return '<option value="'+v.id+'">'+esc(v.name)+' · '+(v.durationMin||0)+' min · '+eur(v.priceEur)+'</option>';}).join('')+'</optgroup>';
-    });
-    g('lz-svc').innerHTML=html;
-  }).catch(function(){ g('lz-svc').innerHTML='<option value="">No se pudieron cargar los servicios</option>'; });
+  function boot(){
+    SLUG=root.dataset.slug; WA=root.dataset.wa||'#';
+    st={service:null,date:null,slot:null,employeeId:null,allowEmp:true,_slots:[],_services:[],_period:{m:[],t:[]}};
+    view={y:0,m:0};
+    root.innerHTML=
+     '<span class="cal-badge">Reservas 24/7 con Lanzo</span>'+
+     '<div class="lz-h">Reserva tu cita</div>'+
+     '<div id="lz-step-svc"><label>1 · Elige tu servicio</label><select id="lz-svc"><option value="">Cargando servicios…</option></select><div class="lz-meta" id="lz-svcmeta"></div></div>'+
+     '<div id="lz-step-date"><label>2 · Elige el día</label><div id="lz-cal"></div><div id="lz-hint" class="lz-hint"></div></div>'+
+     '<div id="lz-step-time" hidden><label>3 · Elige la hora</label><div id="lz-period" class="lz-chips"></div><div id="lz-times"></div></div>'+
+     '<div id="lz-step-emp" hidden><label id="lz-emp-label">4 · Elige profesional</label><div id="lz-emps"></div></div>'+
+     '<div id="lz-step-form" hidden><label id="lz-form-label">5 · Tus datos</label><input id="lz-name" placeholder="Nombre y apellidos" autocomplete="name"><div style="height:8px"></div><input id="lz-phone" placeholder="Teléfono móvil" inputmode="tel" autocomplete="tel"><button id="lz-confirm" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">Confirmar reserva</button><div class="lz-err" id="lz-err"></div></div>'+
+     '<div class="lz-foot">Confirmación inmediata y recordatorio automático. ¿Prefieres WhatsApp? <a href="'+WA+'" target="_blank" rel="noopener">Escríbenos</a></div>';
+    renderCal();
+    api('/salon/'+SLUG).then(function(s){
+      st.allowEmp = !(s && s.allowEmployeeSelection===false);
+      var fl=g('lz-form-label'); if(fl) fl.textContent=(st.allowEmp?'5':'4')+' · Tus datos';
+      st._services=(s&&s.services)||[];
+      var byG={}; st._services.forEach(function(v){ v._g=groupOf(v.name); (byG[v._g]=byG[v._g]||[]).push(v); });
+      var html='<option value="">Elige tu servicio…</option>';
+      GROUPS.forEach(function(gr){ var list=byG[gr.k]; if(!list||!list.length) return;
+        html+='<optgroup label="'+gr.label+'">'+list.map(function(v){return '<option value="'+v.id+'">'+esc(v.name)+' · '+(v.durationMin||0)+' min · '+eur(v.priceEur)+'</option>';}).join('')+'</optgroup>';
+      });
+      g('lz-svc').innerHTML=html;
+    }).catch(function(){ g('lz-svc').innerHTML='<option value="">No se pudieron cargar los servicios</option>'; });
+  }
 
   function renderCal(){
     var today=todayYMD();
@@ -301,7 +323,9 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
   function pickTime(i){
     st.slot=st._slots[i]; st.employeeId=null; hide('form');
     var tb=g('lz-times').children; for(var k=0;k<tb.length;k++) tb[k].classList.toggle('sel', String(tb[k].dataset.i)===String(i));
-    var emps=(st.slot&&st.slot.employees)||[]; show('emp');
+    var emps=(st.slot&&st.slot.employees)||[];
+    if(!st.allowEmp){ hide('emp'); st.employeeId=(emps[0]&&emps[0].id)||null; show('form'); return; }
+    show('emp');
     g('lz-emps').innerHTML='<button type="button" class="lz-emp" data-e="any">Sin preferencia</button>'+emps.map(function(e){return '<button type="button" class="lz-emp" data-e="'+e.id+'">'+esc(e.name)+'</button>';}).join('');
   }
 
@@ -316,10 +340,12 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
     var name=g('lz-name').value.trim(), phone=g('lz-phone').value.trim(), err=g('lz-err');
     if(name.length<2){ err.textContent='Escribe tu nombre.'; return; }
     if(phone.replace(/[^0-9]/g,'').length<7){ err.textContent='Escribe un teléfono válido.'; return; }
-    if(!st.employeeId){ err.textContent='Elige una profesional.'; return; }
+    if(st.allowEmp && !st.employeeId){ err.textContent='Elige una profesional.'; return; }
     err.textContent='';
     var btn=g('lz-confirm'); btn.disabled=true; btn.textContent='Reservando…';
-    fetch(API+'/booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({salonSlug:SLUG,serviceId:st.service.id,employeeId:st.employeeId,startTime:st.slot.startsAt,clientName:name,clientPhone:phone})}).then(function(r){
+    var payload={salonSlug:SLUG,serviceId:st.service.id,startTime:st.slot.startsAt,clientName:name,clientPhone:phone};
+    if(st.employeeId) payload.employeeId=st.employeeId;
+    fetch(API+'/booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(function(r){
       if(r.status===201){ return r.json().then(done); }
       if(r.status===409){ err.textContent='Ese hueco se acaba de ocupar. Te muestro otras horas.'; btn.disabled=false; btn.textContent='Confirmar reserva'; loadTimes(st.date); return; }
       err.textContent='No se pudo reservar. Inténtalo de nuevo o escríbenos por WhatsApp.'; btn.disabled=false; btn.textContent='Confirmar reserva';
@@ -333,8 +359,9 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
     root.innerHTML='<span class="cal-badge">Reserva confirmada</span><div class="lz-ok"><div class="lz-check">✓</div><h4>¡Cita confirmada!</h4><p>'+esc(st.service.name)+(emp?(' con '+esc(emp)):'')+'<br>'+esc(dia)+' a las '+fmt(iso)+'</p><p style="font-size:13px">Te esperamos. Recibirás un recordatorio; si necesitas cambiarla, escríbenos por WhatsApp.</p><a class="btn btn-ghost" href="'+WA+'" target="_blank" rel="noopener">Escribir por WhatsApp</a></div>';
   }
 
-  g('lz-svc').addEventListener('change', function(){
-    var id=this.value; st.service=(st._services||[]).filter(function(v){return v.id===id;})[0]||null;
+  root.addEventListener('change', function(ev){
+    if(!ev.target || ev.target.id!=='lz-svc') return;
+    var id=ev.target.value; st.service=(st._services||[]).filter(function(v){return v.id===id;})[0]||null;
     st.slot=null; st.employeeId=null; hide('time'); hide('emp'); hide('form');
     if(!st.service){ g('lz-svcmeta').textContent=''; return; }
     g('lz-svcmeta').textContent=(st.service.durationMin||0)+' min · '+eur(st.service.priceEur);
@@ -352,6 +379,9 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
     if(t.classList.contains('lz-emp')){ pickEmp(t.dataset.e); return; }
     if(t.id==='lz-confirm'){ ev.preventDefault(); doBooking(); return; }
   });
+
+  window.__lzSwitch=function(slug,wa){ root.dataset.slug=slug; root.dataset.wa=wa; boot(); };
+  boot();
 })();
 </script>
 </body>
@@ -423,6 +453,11 @@ def build_index():
     <h2 style="font-size:clamp(32px,4.6vw,48px);color:var(--forest);margin:12px 0 10px">Reserva tu cita en 1 minuto</h2>
     <p style="color:var(--muted)">Elige tu servicio y el calendario te muestra al momento los días con hueco. Sin llamadas ni esperas.</p>
   </div>
+  <div class="lz-locsel" style="grid-column:1/-1;display:flex;justify-content:center;align-items:center;gap:10px;margin:2px 0 16px;flex-wrap:wrap">
+    <span style="color:var(--muted);font-size:14px">Elige tu salón:</span>
+    <button type="button" class="lz-locbtn on" data-slug="{SLUG_FUEN}" data-wa="{c['whatsapp']}" data-k="fuen" onclick="lzSwitchLoc(this)">Fuenlabrada</button>
+    <button type="button" class="lz-locbtn" data-slug="{SLUG_HUMA}" data-wa="{c['huma_whatsapp']}" data-k="huma" onclick="lzSwitchLoc(this)">Humanes</button>
+  </div>
   <div class="booking-copy">
     <h3 style="font-family:'Cormorant Garamond',serif;font-size:27px;color:var(--forest);margin-bottom:14px">En 3 pasos, cita confirmada</h3>
     <ul>
@@ -474,15 +509,16 @@ def build_index():
 </div></section>
 
 <section class="locs sec-pad" id="locales"><div class="wrap">
-  <div class="head"><span class="eyebrow">Dónde estamos</span><h2>Nuestro salón en Fuenlabrada</h2></div>
-  <p class="subnote">Estamos en el centro de Fuenlabrada. Ven a vernos o reserva tu cita online.</p>
+  <div class="head"><span class="eyebrow">Dónde estamos</span><h2>Nuestros dos salones</h2></div>
+  <p class="subnote">Luluca Nails en Fuenlabrada y en Humanes de Madrid. Ven a vernos o reserva online en el salón que prefieras.</p>
   <div class="loc-grid">
-    <div class="loc"><div class="map"><iframe loading="lazy" src="https://www.google.com/maps?q=Calle%20Escocia%201,%20Fuenlabrada&output=embed"></iframe></div><div class="body"><span class="tag-here">Salón principal</span><h3>Fuenlabrada</h3><div class="info"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> {c['fuen_addr']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg> {c['phone_display']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> {c['fuen_hours']}</div></div><div class="actions"><a href="index.html#reservar" class="btn btn-primary">Reservar aquí</a><a href="{c['fuen_maps']}" target="_blank" rel="noopener" class="btn btn-ghost">Cómo llegar</a></div></div></div>
+    <div class="loc"><div class="map"><iframe loading="lazy" src="https://www.google.com/maps?q=Calle%20Escocia%201,%20Fuenlabrada&output=embed"></iframe></div><div class="body"><span class="tag-here">Fuenlabrada</span><h3>Fuenlabrada</h3><div class="info"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> {c['fuen_addr']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg> {c['phone_display']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> {c['fuen_hours']}</div></div><div class="actions"><a href="index.html#reservar" onclick="lzGoto('fuen')" class="btn btn-primary">Reservar aquí</a><a href="{c['fuen_maps']}" target="_blank" rel="noopener" class="btn btn-ghost">Cómo llegar</a></div></div></div>
+    <div class="loc"><div class="map"><iframe loading="lazy" src="https://www.google.com/maps?q=Avenida%20Campo%20Hermoso%2044,%20Humanes%20de%20Madrid&output=embed"></iframe></div><div class="body"><span class="tag-here">Humanes</span><h3>Humanes de Madrid</h3><div class="info"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> {c['huma_addr']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg> {c['huma_phone_display']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> {c['huma_hours']}</div></div><div class="actions"><a href="index.html#reservar" onclick="lzGoto('huma')" class="btn btn-primary">Reservar aquí</a><a href="{c['huma_maps']}" target="_blank" rel="noopener" class="btn btn-ghost">Cómo llegar</a></div></div></div>
   </div>
 </div></section>
 {footer()}{mobilebar()}{scripts()}"""
-    return head("Luluca Nails — Uñas, manicura semipermanente y nail art en Fuenlabrada",
-                "Salón de uñas, cejas y pestañas en Fuenlabrada. Manicura semipermanente, uñas de gel y acrílico, nivelación, pedicura y nail art. 100% veganas. Reserva tu cita online.") + body
+    return head("Luluca Nails — Uñas, manicura semipermanente y nail art en Fuenlabrada y Humanes",
+                "Salón de uñas, cejas y pestañas en Fuenlabrada y Humanes de Madrid. Manicura semipermanente, uñas de gel y acrílico, nivelación, pedicura y nail art. 100% veganas. Reserva tu cita online.") + body
 
 # ---------- SERVICIOS ----------
 def build_servicios():
@@ -504,7 +540,7 @@ def build_servicios():
   <span class="chip" onclick="openCat('gemas')">Gemas dentales</span>
 </div></div>
 {catalog}
-<section class="reserva-band" id="reserva"><span class="eyebrow" style="color:var(--gold-2)">Reserva online</span><h2>¿Lo tienes claro? Reserva en un minuto</h2><p>Elige día y hora en la agenda del salón de <span data-locname>Fuenlabrada</span>. Sin llamadas ni esperas.</p><a href="index.html#reservar" class="btn btn-gold">Ir a reservar</a></section>
+<section class="reserva-band" id="reserva"><span class="eyebrow" style="color:var(--gold-2)">Reserva online</span><h2>¿Lo tienes claro? Reserva en un minuto</h2><p>Elige día y hora en la agenda del salón que prefieras: Fuenlabrada o Humanes de Madrid. Sin llamadas ni esperas.</p><a href="index.html#reservar" class="btn btn-gold">Ir a reservar</a></section>
 <div class="disc">Precios y servicios orientativos según la lista del salón. Las duraciones son aproximadas y pueden variar según el estado de la uña. Consulta cualquier duda antes de tu cita.</div>
 {footer()}{mobilebar()}{scripts()}"""
     return head("Servicios y precios — Luluca Nails","Carta completa de servicios y precios de Luluca Nails: manicura, pedicura, uñas esculpidas, nail art, pestañas, cejas, depilación y gemas dentales.")+body
@@ -528,7 +564,7 @@ def build_contacto():
 <section class="sec-pad" style="padding-top:30px"><div class="wrap">
   <div class="contact-grid">
     <div class="contact-card">
-      <h3><span data-locname>Fuenlabrada</span></h3>
+      <h3>Fuenlabrada</h3>
       <div class="cc-sub">Salón principal</div>
       <div class="contact-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> {c['fuen_addr']}</div>
       <div class="contact-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg> {c['phone_display']}</div>
@@ -541,10 +577,94 @@ def build_contacto():
       </div>
     </div>
     <div class="map-embed"><iframe loading="lazy" src="https://www.google.com/maps?q=Calle%20Escocia%201,%20Fuenlabrada&output=embed"></iframe></div>
+    <div class="contact-card">
+      <h3>Humanes de Madrid</h3>
+      <div class="cc-sub">Nuestro segundo salón</div>
+      <div class="contact-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> {c['huma_addr']}</div>
+      <div class="contact-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg> {c['huma_phone_display']}</div>
+      <div class="contact-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> {c['huma_hours']}</div>
+      <div class="contact-actions">
+        <a href="{c['huma_whatsapp']}" target="_blank" rel="noopener" class="btn btn-wa">{WA_ICON} WhatsApp</a>
+        <a href="tel:{c['huma_tel']}" class="btn btn-ghost">Llamar</a>
+      </div>
+    </div>
+    <div class="map-embed"><iframe loading="lazy" src="https://www.google.com/maps?q=Avenida%20Campo%20Hermoso%2044,%20Humanes%20de%20Madrid&output=embed"></iframe></div>
   </div>
 </div></section>
 {footer()}{mobilebar()}{scripts()}"""
-    return head("Contacto — Luluca Nails","Contacta con Luluca Nails por WhatsApp, teléfono o email. Salón en Fuenlabrada.")+body
+    return head("Contacto — Luluca Nails","Contacta con Luluca Nails por WhatsApp, teléfono o email. Salones en Fuenlabrada y Humanes de Madrid.")+body
+
+AVISO_BODY = r"""<h2>1. Datos identificativos</h2>
+<p>En cumplimiento de la Ley 34/2002 de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSICE), se informan los datos del titular de este sitio web:</p>
+<ul>
+<li><b>Titular:</b> Shirley Andrea Blanco Cardenas</li>
+<li><b>NIF/CIF:</b> 60304664K</li>
+<li><b>Nombre comercial:</b> Luluca Nails</li>
+<li><b>Domicilio:</b> Calle Escocia 1, 28942 Fuenlabrada (Madrid)</li>
+<li><b>Correo electrónico:</b> info@lulucanails.com &nbsp;·&nbsp; <b>Teléfono:</b> +34 690 06 27 62</li>
+</ul>
+<h2>2. Objeto</h2>
+<p>Este sitio web informa sobre los servicios de belleza de Luluca Nails y permite la reserva de citas online.</p>
+<h2>3. Alojamiento y reservas</h2>
+<p>El sitio se aloja en GitHub Pages (GitHub, Inc.). El sistema de reservas y la agenda están gestionados por Lanzo, que actúa como encargado del tratamiento por cuenta del titular.</p>
+<h2>4. Propiedad intelectual</h2>
+<p>Los contenidos, textos, imágenes, logotipos y elementos de diseño pertenecen a sus respectivos titulares y no pueden reproducirse sin autorización.</p>
+<h2>5. Responsabilidad</h2>
+<p>El titular no se responsabiliza de los daños derivados del uso indebido del sitio ni de interrupciones ajenas a su control.</p>
+<h2>6. Legislación aplicable</h2>
+<p>Estas condiciones se rigen por la legislación española.</p>"""
+PRIV_BODY = r"""<p>En Luluca Nails cuidamos la protección de tus datos. Esta política explica cómo tratamos la información que nos facilitas, conforme al Reglamento (UE) 2016/679 (RGPD) y la Ley Orgánica 3/2018 (LOPDGDD).</p>
+<h2>1. Responsable del tratamiento</h2>
+<ul>
+<li><b>Responsable:</b> Shirley Andrea Blanco Cardenas — NIF/CIF 60304664K</li>
+<li><b>Domicilio:</b> Calle Escocia 1, 28942 Fuenlabrada (Madrid)</li>
+<li><b>Correo electrónico:</b> info@lulucanails.com</li>
+</ul>
+<h2>2. Qué datos tratamos</h2>
+<p>Los que nos facilitas al reservar una cita o contactar: nombre y apellidos, teléfono y, en su caso, el servicio y la fecha elegidos. Si te escribimos por WhatsApp, también el número y el contenido de esa conversación.</p>
+<h2>3. Para qué los usamos y base legal</h2>
+<ul>
+<li>Gestionar tu reserva y tu cita — base: la prestación del servicio que solicitas.</li>
+<li>Enviarte confirmaciones y recordatorios de tu cita (WhatsApp, SMS o teléfono) — base: la prestación del servicio y el interés legítimo en evitar olvidos.</li>
+<li>Atenderte y responder a tus consultas — base: tu consentimiento.</li>
+</ul>
+<h2>4. Conservación</h2>
+<p>Conservamos tus datos mientras dure la relación y, después, durante los plazos legalmente exigibles; luego se suprimen o anonimizan.</p>
+<h2>5. Destinatarios</h2>
+<p>No vendemos tus datos. Para prestar el servicio trabajamos con proveedores que actúan como encargados del tratamiento:</p>
+<ul>
+<li><b>Lanzo</b> — sistema de reservas y agenda.</li>
+<li><b>Meta Platforms (WhatsApp)</b> — envío de confirmaciones y recordatorios.</li>
+<li><b>Google</b> — mapa de ubicación y reseñas mostradas en la web.</li>
+<li><b>GitHub</b> — alojamiento del sitio web.</li>
+</ul>
+<p>Algunos proveedores pueden implicar transferencias internacionales de datos, amparadas en las garantías del RGPD (p. ej. cláusulas contractuales tipo).</p>
+<h2>6. Tus derechos</h2>
+<p>Puedes ejercer acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a info@lulucanails.com. Si consideras que no atendemos bien tu solicitud, puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).</p>
+<h2>7. Seguridad y menores</h2>
+<p>Aplicamos medidas para proteger tus datos. Este sitio no se dirige a menores de 14 años sin el consentimiento de sus tutores.</p>"""
+COOKIES_BODY = r"""<p>Esta web utiliza cookies y tecnologías similares para funcionar correctamente y mejorar tu experiencia.</p>
+<h2>1. Qué son</h2>
+<p>Pequeños archivos que se guardan en tu dispositivo al navegar. Sirven para recordar preferencias y para que funciones como el mapa o el calendario de reservas trabajen bien.</p>
+<h2>2. Cookies que utilizamos</h2>
+<ul>
+<li><b>Técnicas / necesarias:</b> imprescindibles para que la web y el sistema de reservas funcionen.</li>
+<li><b>De terceros:</b> al mostrar el mapa y las fuentes de Google y el calendario de reservas de Lanzo, estos servicios pueden instalar cookies propias.</li>
+</ul>
+<p>No utilizamos cookies publicitarias ni de perfilado.</p>
+<h2>3. Cómo gestionarlas</h2>
+<p>Puedes permitir, bloquear o eliminar las cookies desde la configuración de tu navegador (Chrome, Safari, Firefox, Edge…). Desactivar algunas puede afectar al funcionamiento de la web.</p>"""
+
+def legal_page(title, desc, body_html):
+    body = f"""{header('')}
+<section class="sec-pad"><div class="wrap" style="max-width:820px">
+  <p style="margin-bottom:10px"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:14px">← Volver al inicio</a></p>
+  <h1 style="font-family:'Cormorant Garamond',serif;color:var(--forest);font-size:clamp(30px,4vw,44px);margin:4px 0 6px">{title}</h1>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:26px">Última actualización: agosto de 2026</p>
+  <div class="legal-body">{body_html}</div>
+</div></section>
+{footer()}{mobilebar()}{scripts()}"""
+    return head(title+" — Luluca Nails", desc)+body
 
 def w(path,html):
     open("/home/claude/site/"+path,"w",encoding="utf-8").write(html)
@@ -554,6 +674,9 @@ w("index.html",build_index())
 w("servicios.html",build_servicios())
 w("galeria.html",build_galeria())
 w("contacto.html",build_contacto())
+w("aviso-legal.html",legal_page("Aviso legal","Aviso legal de Luluca Nails, salón de belleza en Fuenlabrada.",AVISO_BODY))
+w("privacidad.html",legal_page("Política de privacidad","Política de privacidad de Luluca Nails conforme al RGPD.",PRIV_BODY))
+w("cookies.html",legal_page("Política de cookies","Política de cookies de la web de Luluca Nails.",COOKIES_BODY))
 write_reviews_json("/home/claude/site/reviews.json")
 print("wrote reviews.json")
 print("OK")
