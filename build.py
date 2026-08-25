@@ -2,7 +2,12 @@
 """Generador estático de la web de Luluca Nails.
 Ensambla las páginas desde partes comunes (cabecera, pie, scripts) + datos del cliente.
 Este es el germen del sistema multi-web: cambiando CLIENT y las imágenes se produce otra web."""
-import re, io, sys, json
+import re, io, sys, json, os
+
+# Directorio de salida = el del propio script (antes estaba cableado a /home/claude/site,
+# ruta de un contenedor efimero: el generador no podia ejecutarse fuera de el).
+OUT = os.path.dirname(os.path.abspath(__file__)) or "."
+SITE_URL = "https://lulucanails.com"
 
 CLIENT = {
   "name": "Luluca Nails",
@@ -522,7 +527,11 @@ def build_index():
 
 # ---------- SERVICIOS ----------
 def build_servicios():
-    src=open("/home/claude/luluca_servicios.html",encoding="utf-8").read()
+    # AVISO: este fichero fuente NO esta en el repositorio y no se conserva en ninguna
+    # copia local. Mientras falte, build.py NO se puede ejecutar entero. El servicios.html
+    # publicado se genero en su dia y se mantiene a mano. Para recuperar el generador hay
+    # que reconstruir la fuente desde el catalogo de servicios.html (revertir cat2 -> cat).
+    src=open(os.path.join(OUT,"luluca_servicios.html"),encoding="utf-8").read()
     i0=src.index('<div class="catalog">')
     i1=src.index('<section class="reserva-band"')
     catalog=src[i0:i1].strip()
@@ -666,8 +675,26 @@ def legal_page(title, desc, body_html):
 {footer()}{mobilebar()}{scripts()}"""
     return head(title+" — Luluca Nails", desc)+body
 
+def canonical_block(path):
+    """Metadatos sociales y canonical. Se inyectan aqui, en el escritor, para no
+    tocar las 5 llamadas a head(). Sin esto, cada enlace compartido por WhatsApp
+    sale como tarjeta sin foto."""
+    url = SITE_URL + "/" + ("" if path == "index.html" else path)
+    a = '<meta property="og:type" content="website">'
+    return a + "\n" + "\n".join([
+      '<meta property="og:site_name" content="Luluca Nails">',
+      '<meta property="og:locale" content="es_ES">',
+      '<meta property="og:url" content="%s">' % url,
+      '<meta property="og:image" content="%s/assets/img/hero.jpg">' % SITE_URL,
+      '<meta name="twitter:card" content="summary_large_image">',
+      '<link rel="canonical" href="%s">' % url,
+    ])
+
 def w(path,html):
-    open("/home/claude/site/"+path,"w",encoding="utf-8").write(html)
+    a = '<meta property="og:type" content="website">'
+    if a in html and 'rel="canonical"' not in html:
+        html = html.replace(a, canonical_block(path), 1)
+    open(os.path.join(OUT, path),"w",encoding="utf-8").write(html)
     print("wrote",path,len(html)//1024,"KB")
 
 w("index.html",build_index())
@@ -677,6 +704,6 @@ w("contacto.html",build_contacto())
 w("aviso-legal.html",legal_page("Aviso legal","Aviso legal de Luluca Nails, salón de belleza en Fuenlabrada.",AVISO_BODY))
 w("privacidad.html",legal_page("Política de privacidad","Política de privacidad de Luluca Nails conforme al RGPD.",PRIV_BODY))
 w("cookies.html",legal_page("Política de cookies","Política de cookies de la web de Luluca Nails.",COOKIES_BODY))
-write_reviews_json("/home/claude/site/reviews.json")
+write_reviews_json(os.path.join(OUT,"reviews.json"))
 print("wrote reviews.json")
 print("OK")

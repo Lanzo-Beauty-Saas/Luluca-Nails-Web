@@ -254,3 +254,11 @@ details.cat2[open] .chev{transform:rotate(180deg)}
 .lb.on{display:flex}
 .lb img{max-width:92vw;max-height:88vh;border-radius:12px}
 .lb-close{position:absolute;top:20px;right:24px;color:#fff;font-size:34px;cursor:pointer;line-height:1;background:none;border:none}
+
+
+/* Paginas legales */
+.legal-body h2{font-family:'Cormorant Garamond',serif;color:var(--forest);font-size:24px;margin:26px 0 10px}
+.legal-body p,.legal-body li{color:#4a4a44;font-size:15px;line-height:1.7;margin:0 0 10px}
+.legal-body ul{margin:0 0 14px 20px}
+.legal-body a{color:var(--gold)}
+.legal a{color:inherit;text-decoration:underline}
