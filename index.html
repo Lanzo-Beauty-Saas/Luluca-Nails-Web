@@ -385,5 +385,58 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
   boot();
 })();
 </script>
+
+<!-- ===== TEMPORAL - 28 ago 2026 =========================================
+     Fuenlabrada no acepta reservas online mientras su equipo se forma en
+     Lanzo: una reserva web entraria en una agenda que alli todavia nadie
+     mira. Humanes sigue con el calendario normal.
+     PARA REVERTIR: borrar este bloque entero. No hay nada mas que deshacer.
+     ====================================================================== -->
+<script>
+(function(){
+  var SIN_RESERVA = 'fuen';
+  var WA = 'https://wa.me/34690062762?text=' + encodeURIComponent('Hola, quiero pedir cita en Luluca Nails Fuenlabrada');
+
+  function panel(){
+    var p = document.getElementById('lz-wa-only');
+    if (p) return p;
+    var cal = document.getElementById('lz-book');
+    if (!cal) return null;
+    p = document.createElement('div');
+    p.id = 'lz-wa-only';
+    p.className = 'cal';
+    p.style.cssText = 'border-top:4px solid var(--gold-2);display:none;text-align:center;padding:34px 22px';
+    p.innerHTML =
+      '<span class="cal-badge">Fuenlabrada</span>' +
+      '<h3 style="font-family:&quot;Cormorant Garamond&quot;,serif;color:var(--forest);font-size:26px;margin:8px 0 10px">Reserva por WhatsApp</h3>' +
+      '<p style="color:var(--muted);font-size:15px;line-height:1.65;margin:0 auto 22px;max-width:430px">En nuestro salon de Fuenlabrada estamos llevando la agenda por WhatsApp estos dias. Escribenos y te damos hueco enseguida.</p>' +
+      '<a class="btn btn-primary" href="' + WA + '" target="_blank" rel="noopener">Pedir cita por WhatsApp</a>' +
+      '<p style="color:var(--muted);font-size:13px;margin:20px 0 0">Tambien puedes llamarnos: <a href="tel:+34690062762" style="color:var(--gold)">690 06 27 62</a></p>';
+    cal.parentNode.insertBefore(p, cal.nextSibling);
+    return p;
+  }
+
+  function aplicar(k){
+    var cal = document.getElementById('lz-book'), p = panel();
+    if (!cal || !p) return;
+    var off = (k === SIN_RESERVA);
+    cal.style.display = off ? 'none' : '';
+    p.style.display   = off ? 'block' : 'none';
+  }
+
+  var orig = window.lzSwitchLoc;
+  window.lzSwitchLoc = function(btn){
+    if (typeof orig === 'function') orig(btn);
+    aplicar(btn && btn.dataset ? btn.dataset.k : null);
+  };
+
+  function inicial(){
+    var on = document.querySelector('.lz-locbtn.on');
+    aplicar(on && on.dataset ? on.dataset.k : 'fuen');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', inicial);
+  else inicial();
+})();
+</script>
 </body>
 </html>
