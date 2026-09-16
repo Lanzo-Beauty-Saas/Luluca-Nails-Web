@@ -361,7 +361,23 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
     var iso=(j&&j.startsAt)||st.slot.startsAt;
     var dia=new Date(iso).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',timeZone:'Europe/Madrid'});
     var emp=(j&&j.employee&&j.employee.name)||'';
-    root.innerHTML='<span class="cal-badge">Reserva confirmada</span><div class="lz-ok"><div class="lz-check">✓</div><h4>¡Cita confirmada!</h4><p>'+esc(st.service.name)+(emp?(' con '+esc(emp)):'')+'<br>'+esc(dia)+' a las '+fmt(iso)+'</p><p style="font-size:13px">Te esperamos. Recibirás un recordatorio; si necesitas cambiarla, escríbenos por WhatsApp.</p><a class="btn btn-ghost" href="'+WA+'" target="_blank" rel="noopener">Escribir por WhatsApp</a></div>';
+    root.innerHTML='<span class="cal-badge">Reserva confirmada</span><div class="lz-ok" id="lz-ok" tabindex="-1" role="status"><div class="lz-check">✓</div><h4>¡Cita confirmada!</h4><p>'+esc(st.service.name)+(emp?(' con '+esc(emp)):'')+'<br>'+esc(dia)+' a las '+fmt(iso)+'</p><p style="font-size:13px">Te esperamos. Recibirás un recordatorio; si necesitas cambiarla, escríbenos por WhatsApp.</p><a class="btn btn-ghost" href="'+WA+'" target="_blank" rel="noopener">Escribir por WhatsApp</a></div>';
+    // La tarjeta de confirmación es mucho más corta que el widget desplegado:
+    // al sustituirlo, la página se acorta por encima de donde está mirando la
+    // clienta y su scroll acaba en la sección de sedes o en el pie, con la
+    // confirmación fuera de pantalla. Eso es lo que hacía que llamasen al salón
+    // creyendo que la cita no se había hecho. Hay que traerla a la vista.
+    // Doble requestAnimationFrame: el primero cede el turno para que el
+    // navegador aplique el layout nuevo, el segundo mide ya sobre el definitivo.
+    // Salto instantáneo y no 'smooth': una animación en vuelo mientras cambia
+    // el alto del documento acaba clampada donde no toca.
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        var ok=document.getElementById('lz-ok')||root;
+        ok.scrollIntoView({block:'center'});
+        try{ ok.focus({preventScroll:true}); }catch(e){ }
+      });
+    });
   }
 
   root.addEventListener('change', function(ev){
