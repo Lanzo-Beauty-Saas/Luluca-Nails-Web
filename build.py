@@ -219,6 +219,11 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
    '.lz-chip{padding:9px 16px;border:1px solid #d8d5cc;border-radius:999px;background:#fff;cursor:pointer;font:inherit;font-size:14px;color:var(--forest)}',
    '.lz-chip.sel{background:var(--forest);color:#fff;border-color:var(--forest)}',
    '.lz-chip:disabled{opacity:.4;cursor:default}',
+   // El paso de mañana/tarde es el que se colaba: dos pildoras blancas con
+   // borde gris no piden que las toquen, y la clienta leia la ausencia de horas
+   // como ausencia de huecos. `pedir` vive solo hasta que elige periodo.
+   '.lz-chip.pedir{border:2px solid var(--gold-2);font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.06)}',
+   '.lz-pick{color:var(--forest);font-size:14.5px;font-weight:700;line-height:1.35;padding:11px 13px;background:#fff;border:1px dashed var(--gold-2);border-radius:12px;margin-top:2px}',
    '.lz-calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}',
    '.lz-calhead b{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:19px;color:var(--forest);text-transform:capitalize}',
    '.lz-nav{border:none;background:#eceae3;width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:16px;color:var(--forest)}',
@@ -300,7 +305,20 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
 
   function pickDay(ds){
     st.date=ds; st.slot=null; st.employeeId=null; renderCal();
-    if(!st.service){ g('lz-hint').textContent='Elige primero tu servicio arriba ↑'; hide('time'); hide('emp'); hide('form'); try{g('lz-svc').focus();}catch(e){} return; }
+    if(!st.service){
+      // Antes esto escondia la seccion de horas ENTERA y dejaba el aviso debajo
+      // del calendario: la clienta se queda mirando el sitio donde deberian salir
+      // las horas, no ve nada, y concluye que ese dia no tiene hueco. El aviso
+      // tiene que estar donde esta mirando, no doscientos pixeles mas arriba.
+      // `preventScroll` para que el foco del desplegable no le arrastre la vista
+      // justo al mensaje que acabamos de poner delante.
+      g('lz-hint').textContent='';
+      show('time'); hide('emp'); hide('form');
+      g('lz-period').innerHTML='';
+      g('lz-times').innerHTML='<div class="lz-pick">↑ Elige primero tu servicio arriba para ver las horas libres</div>';
+      try{g('lz-svc').focus({preventScroll:true});}catch(e){}
+      return;
+    }
     g('lz-hint').textContent=''; loadTimes(ds);
   }
 
@@ -312,14 +330,16 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
       if(!slots.length){ g('lz-period').innerHTML=''; g('lz-times').innerHTML='<div class="lz-msg">No hay horas libres ese día. Prueba con otro.</div>'; return; }
       var m=[],tt=[]; slots.forEach(function(s,i){ (hourOf(s.startsAt)<14?m:tt).push(i); });
       st._period={m:m,t:tt};
-      g('lz-period').innerHTML='<button type="button" class="lz-chip" data-p="m"'+(m.length?'':' disabled')+'>Mañana ('+m.length+')</button><button type="button" class="lz-chip" data-p="t"'+(tt.length?'':' disabled')+'>Tarde ('+tt.length+')</button>';
-      g('lz-times').innerHTML='<div class="lz-msg">Elige mañana o tarde.</div>';
+      g('lz-period').innerHTML='<button type="button" class="lz-chip pedir" data-p="m"'+(m.length?'':' disabled')+'>Mañana ('+m.length+')</button><button type="button" class="lz-chip pedir" data-p="t"'+(tt.length?'':' disabled')+'>Tarde ('+tt.length+')</button>';
+      // Decir el numero total es lo que desmonta el "no hay huecos": la clienta ve
+      // que hay 20 libres antes de tocar nada.
+      g('lz-times').innerHTML='<div class="lz-pick">\u2191 Toca <b>Mañana</b> o <b>Tarde</b> para ver las '+slots.length+' horas libres de ese día</div>';
       if(m.length && !tt.length) showPeriod('m'); else if(tt.length && !m.length) showPeriod('t');
     }).catch(function(){ g('lz-period').innerHTML=''; g('lz-times').innerHTML='<div class="lz-msg">No se pudo cargar la disponibilidad. Prueba de nuevo.</div>'; });
   }
 
   function showPeriod(p){
-    [...g('lz-period').children].forEach(function(b){ if(b.dataset) b.classList.toggle('sel', b.dataset.p===p); });
+    [...g('lz-period').children].forEach(function(b){ if(b.dataset){ b.classList.toggle('sel', b.dataset.p===p); b.classList.remove('pedir'); } });
     var idxs=(p==='m')?st._period.m:st._period.t;
     g('lz-times').innerHTML=idxs.map(function(i){return '<button type="button" class="lz-time" data-i="'+i+'">'+fmt(st._slots[i].startsAt)+'</button>';}).join('');
     st.slot=null; st.employeeId=null; hide('emp'); hide('form');
