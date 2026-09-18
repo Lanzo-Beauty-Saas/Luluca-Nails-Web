@@ -197,23 +197,85 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
 (function(){
   var root=document.getElementById('lz-book'); if(!root) return;
   var API=root.dataset.api, SLUG='', WA='#';
-  var st={service:null,date:null,slot:null,employeeId:null,allowEmp:true,_slots:[],_services:[],_period:{m:[],t:[]}};
+  var st={service:null,date:null,slot:null,employeeId:null,allowEmp:true,_slots:[],_services:[],_period:{m:[],t:[]},_query:''};
   var view={y:0,m:0};
   var MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  var GROUPS=[{k:'unas',label:'Uñas y manicura'},{k:'pies',label:'Pies y pedicura'},{k:'cejas',label:'Cejas, labio y depilación'},{k:'pest',label:'Pestañas'},{k:'gema',label:'Gemas dentales'}];
-  function groupOf(name){var n=(name||'').toLowerCase();
-    if(n.indexOf('pestañ')>-1||n.indexOf('lifting')>-1||n.indexOf('tinte')>-1) return 'pest';
-    if(n.indexOf('ceja')>-1||n.indexOf('labio')>-1||n.indexOf('laminado')>-1||n.indexOf('frente')>-1||n.indexOf('mejill')>-1||n.indexOf('patill')>-1||n.indexOf('cara completa')>-1) return 'cejas';
-    if(n.indexOf('gema')>-1) return 'gema';
-    if(n.indexOf('pedicura')>-1||n.indexOf('(pies)')>-1||n.indexOf('pies')>-1||n.indexOf('/ pie')>-1) return 'pies';
-    return 'unas';}
+  // ── Carta de servicios ────────────────────────────────────────────────────
+  // Antes esto adivinaba la categoria con expresiones regulares sobre el nombre
+  // y la metia en cinco grupos fijos. La API publica YA devuelve el `category`
+  // que ha puesto la duena, asi que adivinar teniendo la respuesta delante
+  // sobraba: lo que sale aqui es su propia clasificacion.
+  //
+  // PUENTE, NO DESTINO. El buscador de abajo es una traduccion fiel y minima del
+  // motor unico de catalogo (D-393, apps/beautysaas-web/lib/catalog/), que es el
+  // que usan el TPV, la agenda y el widget oficial. Aqui no se puede importar
+  // porque esta web es HTML estatico sin build de TypeScript. Es una COPIA, y
+  // D-393 dice que no se copia: vive solo hasta que esta web pase al widget
+  // servido desde Lanzo. Si cambia el criterio alli, hay que traerlo aqui a mano.
+  var COL=new Intl.Collator('es',{sensitivity:'base'});
+  var OTROS='Otros';
+  // Sin diacriticos y en minusculas, igual que `normalizeForSearch`.
+  function normTxt(x){return (x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();}
+  function catOf(sv){var c=(sv.category||'').trim();return c||OTROS;}
+  // rank 0 = el nombre empieza por lo escrito · 1 = empieza una palabra · 2 = va dentro
+  function rankOf(nom,q){
+    if(nom.indexOf(q)===0) return 0;
+    var i=nom.indexOf(q); if(i<0) return -1;
+    return ' -/(,.+'.indexOf(nom.charAt(i-1))>=0 ? 1 : 2;
+  }
+  function buscar(q){
+    // Dos letras, igual que el motor del producto (MIN_QUERY_LENGTH): con una
+    // sola, la carta salta a modo búsqueda antes de que la sugerencia sirva de
+    // nada y la clienta pierde de vista las categorías.
+    var qn=normTxt(q).trim(); if(qn.length<2) return null;
+    var out=[];
+    (st._services||[]).forEach(function(sv){
+      var r=rankOf(normTxt(sv.name),qn); if(r>=0) out.push({s:sv,r:r});
+    });
+    out.sort(function(a,b){return a.r-b.r || COL.compare(a.s.name,b.s.name);});
+    return out.map(function(o){return o.s;});
+  }
+  // Agrupa por categoria REAL. Unifica las que solo difieren en mayusculas o
+  // acentos —el catalogo de Luluca trae "Uñas" y "uñas", "Pestañas y Cejas" y
+  // "Pestañas y cejas"— y ensena como etiqueta la variante mas usada, para que
+  // la clienta no vea dos apartados que son el mismo. Orden: alfabetico con
+  // "Otros" al final, y dentro de cada uno alfabetico insensible a acentos.
+  function agrupar(lista){
+    var by={};
+    lista.forEach(function(sv){
+      var c=catOf(sv), k=normTxt(c);
+      if(!by[k]) by[k]={items:[],nombres:{}};
+      by[k].items.push(sv);
+      by[k].nombres[c]=(by[k].nombres[c]||0)+1;
+    });
+    return Object.keys(by).map(function(k){
+      var n=by[k].nombres;
+      var label=Object.keys(n).sort(function(a,b){
+        var f=n[b]-n[a]; if(f) return f;
+        // A igual frecuencia gana la que empieza en mayuscula: el catalogo trae
+        // "Uñas" y "uñas" con el mismo recuento, y un apartado en minuscula
+        // canta. Mismo desempate que el script de limpieza del catalogo.
+        var ma=/^[A-ZÀ-Ü]/.test(a)?1:0, mb=/^[A-ZÀ-Ü]/.test(b)?1:0;
+        if(ma!==mb) return mb-ma;
+        return a.localeCompare(b,'es');
+      })[0];
+      return {label:label,items:by[k].items.sort(function(a,b){return COL.compare(a.name,b.name);})};
+    }).sort(function(a,b){
+      if(a.label===OTROS) return 1; if(b.label===OTROS) return -1;
+      return a.label.localeCompare(b.label,'es');
+    });
+  }
 
   var css=[
-   '#lz-book .lz-h{font-family:"Cormorant Garamond",serif;color:var(--forest);font-size:24px;margin:2px 0 14px}',
+   // El margen de arriba libra el `.cal-badge`, que va absolute en la esquina:
+   // con el titulo corto no se tocaban, pero "Reserva tu cita en 3 pasos" le
+   // llegaba justo debajo y el badge lo tapaba.
+   '#lz-book .lz-h{font-family:"Cormorant Garamond",serif;color:var(--forest);font-size:24px;margin:28px 0 14px;line-height:1.15}',
    '#lz-book label{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--forest);margin:18px 0 9px;font-weight:700}',
    '#lz-book label:first-of-type{margin-top:6px}',
-   '#lz-book select,#lz-book input{width:100%;padding:12px 12px;border:1px solid #d8d5cc;border-radius:12px;font:inherit;background:#fff;color:var(--forest);box-sizing:border-box}',
-   '#lz-book optgroup{font-weight:700;color:var(--forest)}',
+   '#lz-book input{width:100%;padding:12px 12px;border:1px solid #d8d5cc;border-radius:12px;font:inherit;background:#fff;color:var(--forest);box-sizing:border-box}',
+   // La x nativa de type=search en Chrome se solaparia con la nuestra.
+   '#lz-book input[type=search]::-webkit-search-cancel-button{display:none}',
    '#lz-book .lz-meta{font-size:13px;color:var(--muted);margin-top:6px}',
    '.lz-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}',
    '.lz-chip{padding:9px 16px;border:1px solid #d8d5cc;border-radius:999px;background:#fff;cursor:pointer;font:inherit;font-size:14px;color:var(--forest)}',
@@ -224,6 +286,44 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
    // como ausencia de huecos. `pedir` vive solo hasta que elige periodo.
    '.lz-chip.pedir{border:2px solid var(--gold-2);font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.06)}',
    '.lz-pick{color:var(--forest);font-size:14.5px;font-weight:700;line-height:1.35;padding:11px 13px;background:#fff;border:1px dashed var(--gold-2);border-radius:12px;margin-top:2px}',
+   '.lz-ovl{position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147483000;background:rgba(20,28,22,.55);display:flex;align-items:center;justify-content:center;padding:18px}',
+   '.lz-toast{background:#fff;border-radius:16px;box-shadow:0 16px 50px rgba(0,0,0,.3);padding:22px 18px 18px;text-align:center;color:var(--forest);font:inherit;max-width:420px;width:100%;box-sizing:border-box}',
+   '.lz-toast-check{width:46px;height:46px;margin:0 auto 10px;border-radius:999px;background:var(--forest);color:#fff;font-size:24px;line-height:46px;font-weight:700}',
+   '.lz-toast h4{font-family:"Cormorant Garamond",serif;font-size:25px;font-weight:600;margin:0 0 8px;color:var(--forest)}',
+   '.lz-toast p{font-size:15px;color:var(--forest);margin:0 0 10px;line-height:1.45}',
+   '.lz-toast .lz-toast-sub{font-size:13px;color:var(--muted);margin-bottom:16px}',
+   '.lz-toast-ok{display:block;width:100%;padding:13px;border:none;border-radius:11px;background:var(--forest);color:#fff;font:inherit;font-size:15px;font-weight:700;cursor:pointer}',
+   '.lz-search-wrap{position:relative}',
+   '.lz-qclear{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:#eceae3;width:26px;height:26px;border-radius:999px;cursor:pointer;font-size:15px;line-height:1;color:var(--forest)}',
+   // El paso 1 va PLEGADO. Abierto en canal empujaba el calendario tan abajo que
+   // costaba encontrarlo, que es justo el paso siguiente. Cerrado ocupa una linea;
+   // abierto tiene tope de alto y su propio scroll, asi que nunca desplaza el
+   // resto de la pagina fuera de la pantalla.
+   '.lz-salones{display:flex;gap:8px;flex-wrap:wrap}',
+   '.lz-sal{flex:1 1 140px;padding:15px 12px;border:2px solid #d8d5cc;border-radius:12px;background:#fff;font:inherit;font-size:16px;font-weight:700;color:var(--forest);cursor:pointer}',
+   '.lz-sal.on{background:var(--forest);color:#fff;border-color:var(--forest)}',
+   '.lz-abre{width:100%;display:flex;align-items:center;gap:10px;text-align:left;padding:12px;border:1px solid #d8d5cc;border-radius:12px;background:#fff;font:inherit;font-size:15px;color:var(--forest);cursor:pointer;box-sizing:border-box}',
+   '.lz-abre[aria-expanded="true"]{border-color:var(--gold-2)}',
+   '.lz-abre.elegido{font-weight:600}',
+   '#lz-abre-txt{flex:1;line-height:1.3}',
+   '.lz-abre-ch{color:var(--gold);font-size:12px;flex:0 0 auto}',
+   '.lz-panel{margin-top:8px;border:1px solid #ece9e2;border-radius:12px;background:#f7f6f1;padding:12px;max-height:58vh;overflow-y:auto;-webkit-overflow-scrolling:touch}',
+   '.lz-panel .lz-grouptitle:first-child{margin-top:2px}',
+   '.lz-grouptitle{font-family:"Cormorant Garamond",serif;font-size:18px;color:var(--forest);margin:16px 0 8px}',
+   '.lz-srvlist{display:flex;flex-direction:column;gap:6px}',
+   '.lz-srv{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;padding:10px 12px;border:1px solid #ece9e2;border-radius:10px;background:#faf9f5;cursor:pointer;font:inherit;color:var(--forest)}',
+   '.lz-srv:hover{border-color:var(--forest)}',
+   '.lz-srv.sel{background:var(--forest);color:#fff;border-color:var(--forest)}',
+   '.lz-srv-n{font-size:14.5px;font-weight:400;line-height:1.3}',
+   '.lz-srv-m{font-size:12.5px;color:var(--muted)}',
+   '.lz-srv.sel .lz-srv-m{color:rgba(255,255,255,.78)}',
+   '.lz-cat{border:1px solid #ece9e2;border-radius:10px;background:#fff;margin-bottom:6px}',
+   '.lz-cat>summary{padding:11px 12px;cursor:pointer;font-size:14.5px;font-weight:600;color:var(--forest);list-style:none;display:flex;align-items:center;gap:8px}',
+   '.lz-cat>summary::-webkit-details-marker{display:none}',
+   '.lz-cat>summary::after{content:"+";margin-left:auto;color:var(--gold);font-weight:700;font-size:17px}',
+   '.lz-cat[open]>summary::after{content:"−"}',
+   '.lz-catn{font-size:12px;color:var(--muted);font-weight:600}',
+   '.lz-cat>div{padding:0 10px 10px}',
    '.lz-calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}',
    '.lz-calhead b{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:19px;color:var(--forest);text-transform:capitalize}',
    '.lz-nav{border:none;background:#eceae3;width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:16px;color:var(--forest)}',
@@ -265,30 +365,131 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
   function hide(s){var e=g('lz-step-'+s); if(e) e.hidden=true;}
 
   function boot(){
-    SLUG=root.dataset.slug; WA=root.dataset.wa||'#';
-    st={service:null,date:null,slot:null,employeeId:null,allowEmp:true,_slots:[],_services:[],_period:{m:[],t:[]}};
+    SLUG=root.dataset.slug||''; WA=root.dataset.wa||'#';
+    st={service:null,date:null,slot:null,employeeId:null,allowEmp:true,_slots:[],_services:[],_period:{m:[],t:[]},_query:''};
     view={y:0,m:0};
     root.innerHTML=
      '<span class="cal-badge">Reservas 24/7 con Lanzo</span>'+
-     '<div class="lz-h">Reserva tu cita</div>'+
-     '<div id="lz-step-svc"><label>1 · Elige tu servicio</label><select id="lz-svc"><option value="">Cargando servicios…</option></select><div class="lz-meta" id="lz-svcmeta"></div></div>'+
-     '<div id="lz-step-date"><label>2 · Elige el día</label><div id="lz-cal"></div><div id="lz-hint" class="lz-hint"></div></div>'+
-     '<div id="lz-step-time" hidden><label>3 · Elige la hora</label><div id="lz-period" class="lz-chips"></div><div id="lz-times"></div></div>'+
-     '<div id="lz-step-emp" hidden><label id="lz-emp-label">4 · Elige profesional</label><div id="lz-emps"></div></div>'+
-     '<div id="lz-step-form" hidden><label id="lz-form-label">5 · Tus datos</label><input id="lz-name" placeholder="Nombre y apellidos" autocomplete="name"><div style="height:8px"></div><input id="lz-phone" placeholder="Teléfono móvil" inputmode="tel" autocomplete="tel"><button id="lz-confirm" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">Confirmar reserva</button><div class="lz-err" id="lz-err"></div></div>'+
+     '<div class="lz-h">Reserva tu cita en 3 pasos</div>'+
+     '<div id="lz-step-sal"><label>1 · Elige tu salón</label><div id="lz-salones" class="lz-salones"></div><div id="lz-salaviso"></div></div>'+
+     '<div id="lz-step-svc" hidden><label>2 · Elige tu servicio</label>'+
+     '<button type="button" id="lz-abre" class="lz-abre" aria-expanded="false" aria-controls="lz-panel"><span id="lz-abre-txt">Elige tu servicio…</span><span class="lz-abre-ch" aria-hidden="true">▾</span></button>'+
+     '<div id="lz-panel" class="lz-panel" hidden>'+
+     '<div class="lz-search-wrap"><input id="lz-q" class="lz-search" type="search" placeholder="Buscar servicio…" aria-label="Buscar servicio" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="button" id="lz-qclear" class="lz-qclear" aria-label="Borrar la búsqueda" hidden>×</button></div>'+
+     '<div id="lz-carta"><div class="lz-msg">Cargando servicios…</div></div></div></div>'+
+     '<div id="lz-step-date" hidden><label>3 · Elige fecha y hora</label><div id="lz-cal"></div><div id="lz-hint" class="lz-hint"></div></div>'+
+     '<div id="lz-step-time" hidden><div id="lz-period" class="lz-chips"></div><div id="lz-times"></div></div>'+
+     '<div id="lz-step-emp" hidden><label id="lz-emp-label">Elige profesional</label><div id="lz-emps"></div></div>'+
+     '<div id="lz-step-form" hidden><label id="lz-form-label">Tus datos</label><input id="lz-name" placeholder="Nombre y apellidos" autocomplete="name"><div style="height:8px"></div><input id="lz-phone" placeholder="Teléfono móvil" inputmode="tel" autocomplete="tel"><button id="lz-confirm" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">Confirmar reserva</button><div class="lz-err" id="lz-err"></div></div>'+
      '<div class="lz-foot">Confirmación inmediata y recordatorio automático. ¿Prefieres WhatsApp? <a href="'+WA+'" target="_blank" rel="noopener">Escríbenos</a></div>';
+    renderSalones();
+    // SIN SALON NO SE CARGA NADA, Y ES A PROPOSITO. Antes arrancaba con
+    // Fuenlabrada puesta: quien no se fijaba reservaba en el salón equivocado, y
+    // eso se arregla en el mostrador o con una llamada. Que elija a mano.
+    if(!SLUG){
+      g('lz-salaviso').innerHTML='<div class="lz-pick">↑ Elige el salón donde quieres tu cita y te enseñamos sus servicios y sus horas libres</div>';
+      return;
+    }
+    show('svc'); show('date');
     renderCal();
     api('/salon/'+SLUG).then(function(s){
       st.allowEmp = !(s && s.allowEmployeeSelection===false);
       var fl=g('lz-form-label'); if(fl) fl.textContent=(st.allowEmp?'5':'4')+' · Tus datos';
       st._services=(s&&s.services)||[];
-      var byG={}; st._services.forEach(function(v){ v._g=groupOf(v.name); (byG[v._g]=byG[v._g]||[]).push(v); });
-      var html='<option value="">Elige tu servicio…</option>';
-      GROUPS.forEach(function(gr){ var list=byG[gr.k]; if(!list||!list.length) return;
-        html+='<optgroup label="'+gr.label+'">'+list.map(function(v){return '<option value="'+v.id+'">'+esc(v.name)+' · '+(v.durationMin||0)+' min · '+eur(v.priceEur)+'</option>';}).join('')+'</optgroup>';
-      });
-      g('lz-svc').innerHTML=html;
-    }).catch(function(){ g('lz-svc').innerHTML='<option value="">No se pudieron cargar los servicios</option>'; });
+      renderCarta();
+    }).catch(function(){ g('lz-carta').innerHTML='<div class="lz-pick">No se pudieron cargar los servicios. Recarga la página o escríbenos por WhatsApp.</div>'; });
+  }
+
+  // Las sedes vienen del HTML. Los botones llevan las mismas clases y datos que
+  // el conmutador viejo, así que `lzGoto('huma')` de la sección de sedes sigue
+  // funcionando sin tocar nada.
+  var SALONES=[];
+  try{ SALONES=JSON.parse(root.dataset.salones||'[]'); }catch(e){ SALONES=[]; }
+
+  function renderSalones(){
+    var cont=g('lz-salones'); if(!cont) return;
+    cont.innerHTML=SALONES.map(function(sa){
+      return '<button type="button" class="lz-locbtn lz-sal'+(SLUG===sa.slug?' on':'')+'" data-k="'+sa.k+
+             '" data-slug="'+sa.slug+'" data-wa="'+sa.wa+'">'+esc(sa.nombre)+'</button>';
+    }).join('');
+  }
+
+  function elegirSalon(slug,wa,k){
+    if(!slug || SLUG===slug) return;
+    root.dataset.slug=slug; root.dataset.wa=wa||'#';
+    // Mantiene en su sitio los nombres de sede del resto de la página.
+    if(k && typeof window.setLocale==='function'){ try{ window.setLocale(k); }catch(e){} }
+    boot();
+  }
+
+  function pintarTrigger(){
+    var t=g('lz-abre-txt'), b=g('lz-abre'); if(!t||!b) return;
+    if(st.service){
+      t.textContent=st.service.name+' · '+(st.service.durationMin||0)+' min · '+eur(st.service.priceEur);
+      b.classList.add('elegido');
+    } else { t.textContent='Elige tu servicio…'; b.classList.remove('elegido'); }
+  }
+  function abrirPanel(){
+    var pn=g('lz-panel'), b=g('lz-abre'); if(!pn) return;
+    pn.hidden=false; if(b) b.setAttribute('aria-expanded','true');
+    try{g('lz-q').focus({preventScroll:true});}catch(e){}
+  }
+  function cerrarPanel(){
+    var pn=g('lz-panel'), b=g('lz-abre'); if(!pn) return;
+    pn.hidden=true; if(b) b.setAttribute('aria-expanded','false');
+  }
+
+  function srvBtn(sv){
+    var sel=(st.service&&st.service.id===sv.id)?' sel':'';
+    return '<button type="button" class="lz-srv'+sel+'" data-s="'+sv.id+'">'+
+           '<span class="lz-srv-n">'+esc(sv.name)+'</span>'+
+           '<span class="lz-srv-m">'+(sv.durationMin||0)+' min · '+eur(sv.priceEur)+'</span></button>';
+  }
+
+  function renderCarta(){
+    var cont=g('lz-carta'); if(!cont) return;
+    var res=buscar(st._query||'');
+    if(res){
+      cont.innerHTML = res.length
+        ? '<div class="lz-srvlist">'+res.map(srvBtn).join('')+'</div>'
+        : '<div class="lz-pick">No hemos encontrado nada con \u201c'+esc((st._query||'').trim())+'\u201d. Prueba con otra palabra, o mira la carta.</div>';
+      return;
+    }
+    var html='';
+    // `destacado` lo calcula el backend con la frecuencia real de reserva de ESE
+    // salon. Un salon recien dado de alta no tiene historial y entonces no hay
+    // destacados: se ensena la carta y ya.
+    var dest=(st._services||[]).filter(function(sv){return sv.destacado;});
+    if(dest.length){
+      html+='<div class="lz-grouptitle">Los más pedidos</div><div class="lz-srvlist">'+dest.map(srvBtn).join('')+'</div>';
+    }
+    var grupos=agrupar(st._services||[]);
+    if(grupos.length){
+      html+='<div class="lz-grouptitle">'+(dest.length?'Todo lo que hacemos':'Nuestros servicios')+'</div>';
+      // Si no hay destacados se abre la primera categoria: una carta entera
+      // plegada obliga a un toque antes de ver un solo precio.
+      html+=grupos.map(function(gr,i){
+        return '<details class="lz-cat"'+((i===0&&!dest.length)?' open':'')+'><summary>'+esc(gr.label)+
+               ' <span class="lz-catn">'+gr.items.length+'</span></summary><div class="lz-srvlist">'+
+               gr.items.map(srvBtn).join('')+'</div></details>';
+      }).join('');
+    }
+    cont.innerHTML=html;
+  }
+
+  // No se repinta la carta entera a proposito: si se repintara, el acordeon se
+  // cerraria justo cuando la clienta acaba de elegir dentro de una categoria.
+  function elegirServicio(id){
+    st.service=(st._services||[]).filter(function(v){return v.id===id;})[0]||null;
+    st.slot=null; st.employeeId=null; hide('emp'); hide('form');
+    g('lz-hint').textContent='';
+    var bs=g('lz-carta').querySelectorAll('.lz-srv');
+    for(var i=0;i<bs.length;i++) bs[i].classList.toggle('sel', bs[i].dataset.s===id);
+    // Se cierra al elegir: asi el calendario vuelve a quedar pegado debajo.
+    pintarTrigger();
+    cerrarPanel();
+    // Si ya habia dia elegido, el flujo se recupera solo y salen las horas.
+    if(st.date) loadTimes(st.date); else hide('time');
   }
 
   function renderCal(){
@@ -316,7 +517,7 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
       show('time'); hide('emp'); hide('form');
       g('lz-period').innerHTML='';
       g('lz-times').innerHTML='<div class="lz-pick">↑ Elige primero tu servicio arriba para ver las horas libres</div>';
-      try{g('lz-svc').focus({preventScroll:true});}catch(e){}
+      abrirPanel();
       return;
     }
     g('lz-hint').textContent=''; loadTimes(ds);
@@ -385,33 +586,84 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
     // La tarjeta de confirmación es mucho más corta que el widget desplegado:
     // al sustituirlo, la página se acorta por encima de donde está mirando la
     // clienta y su scroll acaba en la sección de sedes o en el pie, con la
-    // confirmación fuera de pantalla. Eso es lo que hacía que llamasen al salón
-    // creyendo que la cita no se había hecho. Hay que traerla a la vista.
+    // confirmación fuera de pantalla. Hay que traerla a la vista.
+    //
+    // CUIDADO CON EL SUAVE, QUE AQUÍ NO SE PIDE Y VIENE SOLO.
+    // `assets/css/styles.css` declara `html{scroll-behavior:smooth}`, y
+    // `scrollIntoView` sin `behavior` usa 'auto', que significa "lo que diga esa
+    // propiedad CSS". O sea que este scroll era SUAVE aunque este comentario
+    // dijera lo contrario, y una animación en vuelo mientras el documento se
+    // encoge acaba clampada donde no toca: el fallo original, intacto. Se fuerza
+    // el salto poniendo `scroll-behavior` en el propio <html> —un estilo inline
+    // gana a la hoja— y se restaura después, porque el resto de la página usa el
+    // desplazamiento suave a propósito (ver `openCat`).
+    var raiz=document.documentElement;
+    function centrarConfirmacion(){
+      var previo=raiz.style.scrollBehavior;
+      raiz.style.scrollBehavior='auto';
+      var ok=document.getElementById('lz-ok')||root;
+      ok.scrollIntoView({block:'center'});
+      raiz.style.scrollBehavior=previo;
+      return ok;
+    }
     // Doble requestAnimationFrame: el primero cede el turno para que el
     // navegador aplique el layout nuevo, el segundo mide ya sobre el definitivo.
-    // Salto instantáneo y no 'smooth': una animación en vuelo mientras cambia
-    // el alto del documento acaba clampada donde no toca.
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
-        var ok=document.getElementById('lz-ok')||root;
-        ok.scrollIntoView({block:'center'});
+        var ok=centrarConfirmacion();
         try{ ok.focus({preventScroll:true}); }catch(e){ }
+        // Segundo pase. En móvil la clienta acaba de teclear su teléfono: al
+        // sustituir el widget desaparece el <input> enfocado, el teclado se
+        // cierra con su propia animación y el área visible crece cuando ya
+        // habíamos medido. Un salto instantáneo repetido no se nota y tapa ese
+        // caso, que no se puede reproducir sin un teclado de verdad.
+        setTimeout(centrarConfirmacion, 350);
       });
     });
+
+    // SEGUNDA CAPA, Y ES LA QUE NO PUEDE FALLAR.
+    // Traer la confirmación a la vista depende del navegador, del teclado y del
+    // CSS de la página, y ya ha fallado dos veces contra clientas reales: la
+    // tarjeta se pinta, pero la clienta se queda en la galería —que está justo
+    // debajo de esta sección— y cree que su cita no ha entrado. Así que la
+    // confirmación no puede vivir SOLO en un sitio al que hay que llegar
+    // desplazándose. Este aviso se pinta sobre el área visible: se ve esté donde
+    // esté el scroll, y no se va hasta que ella lo cierra.
+    // Cuelga de <body> y no del widget porque un ancestro con `transform`
+    // rompería el `position:fixed`.
+    var capa=document.createElement('div');
+    capa.className='lz-ovl';
+    capa.innerHTML='<div class="lz-toast" role="status"><div class="lz-toast-check">✓</div>'+
+      '<h4>¡Cita confirmada!</h4>'+
+      '<p><b>'+esc(st.service.name)+'</b>'+(emp?(' con '+esc(emp)):'')+'<br>'+esc(dia)+' a las '+fmt(iso)+'</p>'+
+      '<p class="lz-toast-sub">Recibirás un recordatorio. Si necesitas cambiarla, escríbenos por WhatsApp.</p>'+
+      '<button type="button" class="lz-toast-ok">Entendido</button></div>';
+    function cerrarAviso(){
+      if(capa.parentNode) capa.parentNode.removeChild(capa);
+      centrarConfirmacion();
+    }
+    capa.addEventListener('click', function(ev){
+      if(ev.target===capa || (ev.target.className||'')==='lz-toast-ok') cerrarAviso();
+    });
+    document.body.appendChild(capa);
   }
 
-  root.addEventListener('change', function(ev){
-    if(!ev.target || ev.target.id!=='lz-svc') return;
-    var id=ev.target.value; st.service=(st._services||[]).filter(function(v){return v.id===id;})[0]||null;
-    st.slot=null; st.employeeId=null; hide('time'); hide('emp'); hide('form');
-    if(!st.service){ g('lz-svcmeta').textContent=''; return; }
-    g('lz-svcmeta').textContent=(st.service.durationMin||0)+' min · '+eur(st.service.priceEur);
-    g('lz-hint').textContent='';
-    if(st.date) loadTimes(st.date);
+  // Se repinta solo la lista de resultados, no el paso entero: repintar el paso
+  // le quitaria el foco al <input> y en movil se cerraria el teclado a la
+  // primera letra.
+  root.addEventListener('input', function(ev){
+    if(!ev.target || ev.target.id!=='lz-q') return;
+    st._query=ev.target.value;
+    var b=g('lz-qclear'); if(b) b.hidden = !st._query;
+    renderCarta();
   });
 
   root.addEventListener('click', function(ev){
     var t=ev.target.closest('button'); if(!t) return;
+    if(t.classList.contains('lz-sal')){ elegirSalon(t.dataset.slug,t.dataset.wa,t.dataset.k); return; }
+    if(t.id==='lz-abre'){ if(g('lz-panel').hidden) abrirPanel(); else cerrarPanel(); return; }
+    if(t.classList.contains('lz-srv')){ elegirServicio(t.dataset.s); return; }
+    if(t.id==='lz-qclear'){ st._query=''; var q=g('lz-q'); if(q){ q.value=''; try{q.focus();}catch(e){} } t.hidden=true; renderCarta(); return; }
     if(t.classList.contains('lz-chip')){ if(t.dataset.p && !t.disabled) showPeriod(t.dataset.p); return; }
     if(t.id==='lz-prev'){ var a=new Date(view.y,view.m-1,1); view.y=a.getFullYear(); view.m=a.getMonth(); renderCal(); return; }
     if(t.id==='lz-next'){ var b=new Date(view.y,view.m+1,1); view.y=b.getFullYear(); view.m=b.getMonth(); renderCal(); return; }
@@ -494,11 +746,6 @@ def build_index():
     <h2 style="font-size:clamp(32px,4.6vw,48px);color:var(--forest);margin:12px 0 10px">Reserva tu cita en 1 minuto</h2>
     <p style="color:var(--muted)">Elige tu servicio y el calendario te muestra al momento los días con hueco. Sin llamadas ni esperas.</p>
   </div>
-  <div class="lz-locsel" style="grid-column:1/-1;display:flex;justify-content:center;align-items:center;gap:10px;margin:2px 0 16px;flex-wrap:wrap">
-    <span style="color:var(--muted);font-size:14px">Elige tu salón:</span>
-    <button type="button" class="lz-locbtn on" data-slug="{SLUG_FUEN}" data-wa="{c['whatsapp']}" data-k="fuen" onclick="lzSwitchLoc(this)">Fuenlabrada</button>
-    <button type="button" class="lz-locbtn" data-slug="{SLUG_HUMA}" data-wa="{c['huma_whatsapp']}" data-k="huma" onclick="lzSwitchLoc(this)">Humanes</button>
-  </div>
   <div class="booking-copy">
     <h3 style="font-family:'Cormorant Garamond',serif;font-size:27px;color:var(--forest);margin-bottom:14px">En 3 pasos, cita confirmada</h3>
     <ul>
@@ -508,7 +755,7 @@ def build_index():
     </ul>
     <a href="{c['whatsapp']}" target="_blank" rel="noopener" class="btn btn-wa">{WA_ICON} ¿Prefieres WhatsApp? Escríbenos</a>
   </div>
-  <div class="cal" id="lz-book" data-slug="luluca-nails-fuenlabrada" data-api="https://api.lanzo.es/api/public" data-wa="{c['whatsapp']}" style="border-top:4px solid var(--gold-2)">
+  <div class="cal" id="lz-book" data-api="https://api.lanzo.es/api/public" data-wa="{c['whatsapp']}" data-salones='[{{"k":"fuen","nombre":"Fuenlabrada","slug":"{SLUG_FUEN}","wa":"{c['whatsapp']}"}},{{"k":"huma","nombre":"Humanes de Madrid","slug":"{SLUG_HUMA}","wa":"{c['huma_whatsapp']}"}}]' style="border-top:4px solid var(--gold-2)">
     <span class="cal-badge">Reservas · Lanzo</span>
     <div class="lz-status" style="color:var(--muted);font-size:14px;padding:20px 0;text-align:center">Cargando el calendario de reservas…</div>
   </div>
