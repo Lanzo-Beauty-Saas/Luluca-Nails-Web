@@ -24,7 +24,7 @@ CLIENT = {
   # Humanes (segundo local). WhatsApp propio pendiente: de momento usa el de la marca.
   "huma_addr": "Avenida Campo Hermoso 44, Humanes de Madrid",
   "huma_maps": "https://www.google.com/maps/search/?api=1&query=Avenida%20Campo%20Hermoso%2044%20Humanes%20de%20Madrid",
-  "huma_hours": "L-V 09:00–20:00",
+  "huma_hours": "L-V 10:00–20:30 · S 10:00–15:00",
   "huma_phone_display": "625 17 97 79",
   "huma_tel": "+34625179779",
 }
