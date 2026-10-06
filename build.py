@@ -21,19 +21,19 @@ CLIENT = {
   "fuen_addr": "Calle Escocia 1, Fuenlabrada, Madrid",
   "fuen_maps": "https://www.google.com/maps/search/?api=1&query=Calle%20Escocia%201%20Fuenlabrada",
   "fuen_hours": "L-V 09:00–20:00 · S 09:00–14:00",
-  # Humanes (segundo local). WhatsApp propio pendiente: de momento usa el de la marca.
+  # Humanes (segundo local), con teléfono y WhatsApp propios.
   "huma_addr": "Avenida Campo Hermoso 44, Humanes de Madrid",
   "huma_maps": "https://www.google.com/maps/search/?api=1&query=Avenida%20Campo%20Hermoso%2044%20Humanes%20de%20Madrid",
   "huma_hours": "L-V 10:00–20:30 · S 10:00–15:00",
-  "huma_phone_display": "625 17 97 79",
-  "huma_tel": "+34625179779",
+  "huma_phone_display": "+34 624 11 08 86",
+  "huma_tel": "+34624110886",
 }
 
 # Slugs de reservas (cada local a su cuenta de Lanzo)
 SLUG_FUEN = "luluca-nails-fuenlabrada"
 SLUG_HUMA = "luluca-nails-humanes"
-# WhatsApp por local (Humanes hereda el de la marca hasta tener número propio)
-CLIENT["huma_whatsapp"] = CLIENT["whatsapp"]
+# WhatsApp por local (Humanes tiene número propio)
+CLIENT["huma_whatsapp"] = "https://wa.me/34624110886?text=Hola%2C%20quiero%20reservar%20una%20cita%20en%20Luluca%20Nails"
 
 BOOKING_URL = "https://app.lanzo.es/luluca-nails-fuenlabrada"
 
