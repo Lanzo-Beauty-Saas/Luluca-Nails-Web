@@ -1,8 +1,22 @@
 {
-  "rating": 4.7,
-  "count": 127,
-  "updated": "2026-07-30",
-  "source": "seed",
+  "rating": 4.6,
+  "count": 132,
+  "salones": {
+    "fuen": {
+      "rating": 4.6,
+      "count": 132
+    },
+    "huma": {
+      "rating": 4.9,
+      "count": 17
+    }
+  },
+  "total": {
+    "rating": 4.6,
+    "count": 149
+  },
+  "updated": "2026-10-08",
+  "source": "manual",
   "reviews": [
     {
       "name": "Adriana Sevillano",

@@ -94,8 +94,18 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
   function stars(n){n=Math.max(1,Math.min(5,Math.round(n||5)));var s='';for(var i=0;i<n;i++)s+='★';return s;}
   fetch('reviews.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(d){
     if(!d||!d.reviews||!d.reviews.length) return;
-    var sc=document.getElementById('rev-score'); if(sc&&d.rating){sc.textContent=(''+d.rating).replace('.',',');}
-    var cn=document.getElementById('rev-count-num'); if(cn&&(d.count||d.count===0)){cn.textContent=d.count;}
+    // Las cifras viven marcadas por sitio (total, fuen, huma) y se refrescan todas
+    // de una pasada: estan repetidas en el heroe, en la franja y en las fichas, y
+    // antes solo se actualizaban las dos de esta seccion.
+    var agg={total:d.total||{rating:d.rating,count:d.count},
+             fuen:(d.salones&&d.salones.fuen)||{rating:d.rating,count:d.count},
+             huma:(d.salones&&d.salones.huma)||null};
+    document.querySelectorAll('[data-rev-score]').forEach(function(e){
+      var a=agg[e.getAttribute('data-rev-score')]; if(a&&a.rating) e.textContent=(''+a.rating).replace('.',',');
+    });
+    document.querySelectorAll('[data-rev-count]').forEach(function(e){
+      var a=agg[e.getAttribute('data-rev-count')]; if(a&&(a.count||a.count===0)) e.textContent=a.count;
+    });
     grid.innerHTML=d.reviews.map(function(v){
       var ini=esc(((v.name||'?').trim().charAt(0)||'?').toUpperCase());
       var av = v.photo ? '<div class="av" style="background-image:url('+JSON.stringify(v.photo)+');background-size:cover;color:transparent">'+ini+'</div>' : '<div class="av">'+ini+'</div>';
@@ -210,8 +220,12 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
    // abierto tiene tope de alto y su propio scroll, asi que nunca desplaza el
    // resto de la pagina fuera de la pantalla.
    '.lz-salones{display:flex;gap:8px;flex-wrap:wrap}',
-   '.lz-sal{flex:1 1 140px;padding:15px 12px;border:2px solid #d8d5cc;border-radius:12px;background:#fff;font:inherit;font-size:16px;font-weight:700;color:var(--forest);cursor:pointer}',
+   '.lz-sal{flex:1 1 190px;display:flex;flex-direction:column;gap:3px;text-align:left;padding:13px 14px;border:2px solid #d8d5cc;border-radius:12px;background:#fff;font:inherit;color:var(--forest);cursor:pointer}',
    '.lz-sal.on{background:var(--forest);color:#fff;border-color:var(--forest)}',
+   '.lz-sal-n{font-size:16px;font-weight:700;line-height:1.2}',
+   '.lz-sal-d{font-size:12.5px;font-weight:500;line-height:1.3;color:var(--muted)}',
+   '.lz-sal.on .lz-sal-d{color:#cfddd0}',
+   '.lz-sub{color:var(--muted);font-size:13.5px;line-height:1.4;margin:-4px 0 9px}',
    '.lz-abre{width:100%;display:flex;align-items:center;gap:10px;text-align:left;padding:12px;border:1px solid #d8d5cc;border-radius:12px;background:#fff;font:inherit;font-size:15px;color:var(--forest);cursor:pointer;box-sizing:border-box}',
    '.lz-abre[aria-expanded="true"]{border-color:var(--gold-2)}',
    '.lz-abre.elegido{font-weight:600}',
@@ -281,7 +295,7 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
     root.innerHTML=
      '<span class="cal-badge">Reservas 24/7 con Lanzo</span>'+
      '<div class="lz-h">Reserva tu cita en 3 pasos</div>'+
-     '<div id="lz-step-sal"><label>1 · Elige tu salón</label><div id="lz-salones" class="lz-salones"></div><div id="lz-salaviso"></div></div>'+
+     '<div id="lz-step-sal"><label>1 · Elige tu salón</label><div class="lz-sub">Cada salón tiene su propia agenda y su propio equipo: la cita se guarda solo en el que elijas.</div><div id="lz-salones" class="lz-salones"></div><div id="lz-salaviso"></div></div>'+
      '<div id="lz-step-svc" hidden><label>2 · Elige tu servicio</label>'+
      '<button type="button" id="lz-abre" class="lz-abre" aria-expanded="false" aria-controls="lz-panel"><span id="lz-abre-txt">Elige tu servicio…</span><span class="lz-abre-ch" aria-hidden="true">▾</span></button>'+
      '<div id="lz-panel" class="lz-panel" hidden>'+
@@ -319,8 +333,11 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
   function renderSalones(){
     var cont=g('lz-salones'); if(!cont) return;
     cont.innerHTML=SALONES.map(function(sa){
+      // Nombre y direccion, como en los selectores de centro de las cadenas: con
+      // solo el nombre, quien no conoce los dos locales elige a ciegas.
       return '<button type="button" class="lz-locbtn lz-sal'+(SLUG===sa.slug?' on':'')+'" data-k="'+sa.k+
-             '" data-slug="'+sa.slug+'" data-wa="'+sa.wa+'">'+esc(sa.nombre)+'</button>';
+             '" data-slug="'+sa.slug+'" data-wa="'+sa.wa+'"><span class="lz-sal-n">'+esc(sa.nombre)+
+             '</span><span class="lz-sal-d">'+esc(sa.dir||'')+'</span></button>';
     }).join('');
   }
 

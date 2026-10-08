@@ -41,11 +41,26 @@ WA_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-wid
 CAL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'
 G_SVG = '<svg viewBox="0 0 48 48" width="16" height="16"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>'
 
-# ------- Reseñas de Google (semilla verbatim + agregado real, 30-jul-2026) -------
+# ------- Reseñas de Google (semilla verbatim + agregado real) -------
 # Fuente única. La herramienta de auto-actualización (GitHub Action + Places API)
 # reescribe reviews.json con estos mismos campos; la web se renderiza desde ahí.
-REVIEWS_RATING = 4.7
-REVIEWS_COUNT = 127
+#
+# UN AGREGADO POR SALÓN. Cada local tiene su propia ficha en Google y sus propias
+# reseñas; ensenar solo el de Fuenlabrada dejaba fuera a Humanes y, al reves,
+# ensenar un unico numero global escondia que Humanes esta en 4,9. Los dos se
+# comprobaron a mano en las fichas el 8-10-2026, hasta que la Action tire sola.
+REVIEWS_FUEN = {"rating": 4.6, "count": 132}
+REVIEWS_HUMA = {"rating": 4.9, "count": 17}
+REVIEWS_COUNT_TOTAL = REVIEWS_FUEN["count"] + REVIEWS_HUMA["count"]
+# Media ponderada por numero de resenas, no la media de las dos medias: con 132 y
+# 17 resenas, promediar 4,6 y 4,9 daria 4,75 y seria inflar la nota.
+REVIEWS_RATING_TOTAL = round(
+    (REVIEWS_FUEN["rating"]*REVIEWS_FUEN["count"] + REVIEWS_HUMA["rating"]*REVIEWS_HUMA["count"])
+    / REVIEWS_COUNT_TOTAL, 1)
+def _num(x): return ("%g" % x).replace(".", ",")
+# La ficha principal sigue siendo la de Fuenlabrada (es la que consulta la Action).
+REVIEWS_RATING = REVIEWS_FUEN["rating"]
+REVIEWS_COUNT = REVIEWS_FUEN["count"]
 REVIEWS_SEED = [
   {"name":"Adriana Sevillano","date":"Hace 3 meses","rating":5,"photo":None,
    "text":"Sitio super recomendable para hacerte las uñas. Trabajan excepcional todas, Laura, Andrea y Jenny, con un trato muy humano y cercano a cada clienta. Te hacen sentir super a gusto desde que entras hasta que te vas."},
@@ -89,7 +104,9 @@ def build_review_cards(reviews=REVIEWS_SEED):
 
 def write_reviews_json(path="reviews.json"):
     data = {"rating": REVIEWS_RATING, "count": REVIEWS_COUNT,
-            "updated": "2026-07-30", "source": "seed",
+            "salones": {"fuen": REVIEWS_FUEN, "huma": REVIEWS_HUMA},
+            "total": {"rating": REVIEWS_RATING_TOTAL, "count": REVIEWS_COUNT_TOTAL},
+            "updated": "2026-10-08", "source": "manual",
             "reviews": REVIEWS_SEED}
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -184,8 +201,18 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
   function stars(n){n=Math.max(1,Math.min(5,Math.round(n||5)));var s='';for(var i=0;i<n;i++)s+='★';return s;}
   fetch('reviews.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(d){
     if(!d||!d.reviews||!d.reviews.length) return;
-    var sc=document.getElementById('rev-score'); if(sc&&d.rating){sc.textContent=(''+d.rating).replace('.',',');}
-    var cn=document.getElementById('rev-count-num'); if(cn&&(d.count||d.count===0)){cn.textContent=d.count;}
+    // Las cifras viven marcadas por sitio (total, fuen, huma) y se refrescan todas
+    // de una pasada: estan repetidas en el heroe, en la franja y en las fichas, y
+    // antes solo se actualizaban las dos de esta seccion.
+    var agg={total:d.total||{rating:d.rating,count:d.count},
+             fuen:(d.salones&&d.salones.fuen)||{rating:d.rating,count:d.count},
+             huma:(d.salones&&d.salones.huma)||null};
+    document.querySelectorAll('[data-rev-score]').forEach(function(e){
+      var a=agg[e.getAttribute('data-rev-score')]; if(a&&a.rating) e.textContent=(''+a.rating).replace('.',',');
+    });
+    document.querySelectorAll('[data-rev-count]').forEach(function(e){
+      var a=agg[e.getAttribute('data-rev-count')]; if(a&&(a.count||a.count===0)) e.textContent=a.count;
+    });
     grid.innerHTML=d.reviews.map(function(v){
       var ini=esc(((v.name||'?').trim().charAt(0)||'?').toUpperCase());
       var av = v.photo ? '<div class="av" style="background-image:url('+JSON.stringify(v.photo)+');background-size:cover;color:transparent">'+ini+'</div>' : '<div class="av">'+ini+'</div>';
@@ -300,8 +327,12 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
    // abierto tiene tope de alto y su propio scroll, asi que nunca desplaza el
    // resto de la pagina fuera de la pantalla.
    '.lz-salones{display:flex;gap:8px;flex-wrap:wrap}',
-   '.lz-sal{flex:1 1 140px;padding:15px 12px;border:2px solid #d8d5cc;border-radius:12px;background:#fff;font:inherit;font-size:16px;font-weight:700;color:var(--forest);cursor:pointer}',
+   '.lz-sal{flex:1 1 190px;display:flex;flex-direction:column;gap:3px;text-align:left;padding:13px 14px;border:2px solid #d8d5cc;border-radius:12px;background:#fff;font:inherit;color:var(--forest);cursor:pointer}',
    '.lz-sal.on{background:var(--forest);color:#fff;border-color:var(--forest)}',
+   '.lz-sal-n{font-size:16px;font-weight:700;line-height:1.2}',
+   '.lz-sal-d{font-size:12.5px;font-weight:500;line-height:1.3;color:var(--muted)}',
+   '.lz-sal.on .lz-sal-d{color:#cfddd0}',
+   '.lz-sub{color:var(--muted);font-size:13.5px;line-height:1.4;margin:-4px 0 9px}',
    '.lz-abre{width:100%;display:flex;align-items:center;gap:10px;text-align:left;padding:12px;border:1px solid #d8d5cc;border-radius:12px;background:#fff;font:inherit;font-size:15px;color:var(--forest);cursor:pointer;box-sizing:border-box}',
    '.lz-abre[aria-expanded="true"]{border-color:var(--gold-2)}',
    '.lz-abre.elegido{font-weight:600}',
@@ -371,7 +402,7 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
     root.innerHTML=
      '<span class="cal-badge">Reservas 24/7 con Lanzo</span>'+
      '<div class="lz-h">Reserva tu cita en 3 pasos</div>'+
-     '<div id="lz-step-sal"><label>1 · Elige tu salón</label><div id="lz-salones" class="lz-salones"></div><div id="lz-salaviso"></div></div>'+
+     '<div id="lz-step-sal"><label>1 · Elige tu salón</label><div class="lz-sub">Cada salón tiene su propia agenda y su propio equipo: la cita se guarda solo en el que elijas.</div><div id="lz-salones" class="lz-salones"></div><div id="lz-salaviso"></div></div>'+
      '<div id="lz-step-svc" hidden><label>2 · Elige tu servicio</label>'+
      '<button type="button" id="lz-abre" class="lz-abre" aria-expanded="false" aria-controls="lz-panel"><span id="lz-abre-txt">Elige tu servicio…</span><span class="lz-abre-ch" aria-hidden="true">▾</span></button>'+
      '<div id="lz-panel" class="lz-panel" hidden>'+
@@ -409,8 +440,11 @@ function closeLb(e){document.getElementById('lb').classList.remove('on');}
   function renderSalones(){
     var cont=g('lz-salones'); if(!cont) return;
     cont.innerHTML=SALONES.map(function(sa){
+      // Nombre y direccion, como en los selectores de centro de las cadenas: con
+      // solo el nombre, quien no conoce los dos locales elige a ciegas.
       return '<button type="button" class="lz-locbtn lz-sal'+(SLUG===sa.slug?' on':'')+'" data-k="'+sa.k+
-             '" data-slug="'+sa.slug+'" data-wa="'+sa.wa+'">'+esc(sa.nombre)+'</button>';
+             '" data-slug="'+sa.slug+'" data-wa="'+sa.wa+'"><span class="lz-sal-n">'+esc(sa.nombre)+
+             '</span><span class="lz-sal-d">'+esc(sa.dir||'')+'</span></button>';
     }).join('');
   }
 
@@ -723,23 +757,19 @@ def build_index():
       <a href="index.html#reservar" class="btn btn-gold">{CAL_ICON} Reservar cita</a>
       <a href="servicios.html" class="btn btn-ghost">Ver servicios</a>
     </div>
-    <div class="hero-trust"><span class="stars">★★★★★</span><span><b style="color:var(--forest)">Excelente</b> · 4,7 · 127 reseñas en Google</span></div>
+    <div class="hero-trust"><span class="stars">★★★★★</span><span><b style="color:var(--forest)">Excelente</b> · <span data-rev-score="total">{_num(REVIEWS_RATING_TOTAL)}</span> · <span data-rev-count="total">{REVIEWS_COUNT_TOTAL}</span> reseñas en Google</span></div>
   </div>
   <div class="hero-photo thumb-fallback"><img src="assets/img/hero.jpg" alt="Uñas y manicura en Luluca Nails Fuenlabrada"><div class="badge"><div class="n">+4</div><small>años cuidando<br>tus uñas en Fuenlabrada</small></div></div>
 </div></section>
 
 <section style="background:#edf0ea;border-top:1px solid rgba(0,0,0,.05);border-bottom:1px solid rgba(0,0,0,.05)"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:12px 26px;justify-content:center;align-items:center;padding:18px 20px;font-size:14px;color:var(--forest)">
   <span><b>100% veganas</b></span><span style="opacity:.3">·</span>
-  <span><b>Sin testar en animales</b></span><span style="opacity:.3">·</span>
+  <span><b>Sin productos testados en animales</b></span><span style="opacity:.3">·</span>
   <span><b>Esmaltes de larga duración</b></span><span style="opacity:.3">·</span>
-  <span><b>4,7★</b> · 127 reseñas en Google</span><span style="opacity:.3">·</span>
-  <span><b>+4 años</b> en Fuenlabrada</span>
+  <span><b><span data-rev-score="total">{_num(REVIEWS_RATING_TOTAL)}</span>★</b> · <span data-rev-count="total">{REVIEWS_COUNT_TOTAL}</span> reseñas en Google</span><span style="opacity:.3">·</span>
+  <span><b>Dos centros</b> en Madrid: <b>+4 años</b> en Fuenlabrada y recién abiertas en Humanes</span>
 </div></section>
 
-<section class="cats sec-pad" id="servicios"><div class="wrap">
-  <div class="head"><span class="eyebrow">Nuestros servicios</span><h2>Todo para tus manos, tu mirada y tu piel</h2><p>Siete familias de servicios. Toca la que te interese para ver todos los detalles y precios.</p></div>
-  <div class="cat-grid">{cat_html}</div>
-</div></section>
 <section class="booking sec-pad" id="reservar" style="background:#eef1ec"><div class="wrap" style="align-items:start">
   <div class="booking-head" style="grid-column:1/-1;text-align:center;max-width:660px;margin:0 auto 6px">
     <span class="eyebrow">Reserva online</span>
@@ -755,13 +785,17 @@ def build_index():
     </ul>
     <a href="{c['whatsapp']}" target="_blank" rel="noopener" class="btn btn-wa">{WA_ICON} ¿Prefieres WhatsApp? Escríbenos</a>
   </div>
-  <div class="cal" id="lz-book" data-api="https://api.lanzo.es/api/public" data-wa="{c['whatsapp']}" data-salones='[{{"k":"fuen","nombre":"Fuenlabrada","slug":"{SLUG_FUEN}","wa":"{c['whatsapp']}"}},{{"k":"huma","nombre":"Humanes de Madrid","slug":"{SLUG_HUMA}","wa":"{c['huma_whatsapp']}"}}]' style="border-top:4px solid var(--gold-2)">
+  <div class="cal" id="lz-book" data-api="https://api.lanzo.es/api/public" data-wa="{c['whatsapp']}" data-salones='[{{"k":"fuen","nombre":"Fuenlabrada","dir":"{c['fuen_addr']}","slug":"{SLUG_FUEN}","wa":"{c['whatsapp']}"}},{{"k":"huma","nombre":"Humanes de Madrid","dir":"{c['huma_addr']}","slug":"{SLUG_HUMA}","wa":"{c['huma_whatsapp']}"}}]' style="border-top:4px solid var(--gold-2)">
     <span class="cal-badge">Reservas · Lanzo</span>
     <div class="lz-status" style="color:var(--muted);font-size:14px;padding:20px 0;text-align:center">Cargando el calendario de reservas…</div>
   </div>
 </div></section>
 
 
+<section class="cats sec-pad" id="servicios"><div class="wrap">
+  <div class="head"><span class="eyebrow">Nuestros servicios</span><h2>Todo para tus manos, tu mirada y tu piel</h2><p>Siete familias de servicios. Toca la que te interese para ver todos los detalles y precios.</p></div>
+  <div class="cat-grid">{cat_html}</div>
+</div></section>
 <section class="gallery sec-pad" id="galeria"><div class="wrap">
   <div class="head"><div><span class="eyebrow">Nuestro trabajo</span><h2>Nail art hecho a tu medida</h2><p>Diseños reales de Luluca. Aquí es donde ponemos el color.</p></div><a href="galeria.html" class="btn btn-ghost">Ver galería completa</a></div>
   <div class="gal-grid">{gal}</div>
@@ -786,22 +820,23 @@ def build_index():
 <section class="reviews sec-pad" id="opiniones"><div class="wrap">
   <div class="head"><span class="eyebrow">Opiniones</span><h2>Lo que dicen nuestras clientas</h2></div>
   <div class="rev-summary" style="display:flex;align-items:center;justify-content:center;gap:16px;margin:0 auto 36px;max-width:540px">
-    <div id="rev-score" style="font-family:'Cormorant Garamond',serif;font-size:54px;line-height:1;color:var(--forest);font-weight:600">4,7</div>
+    <div id="rev-score" data-rev-score="total" style="font-family:'Cormorant Garamond',serif;font-size:54px;line-height:1;color:var(--forest);font-weight:600">{_num(REVIEWS_RATING_TOTAL)}</div>
     <div>
       <div class="stars" style="font-size:22px;letter-spacing:2px">★★★★★</div>
-      <div style="color:var(--muted);font-size:14px;margin-top:5px;display:flex;align-items:center;gap:7px"><span style="width:16px;height:16px;display:inline-flex;flex:0 0 auto"><svg viewBox="0 0 48 48" width="16" height="16"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg></span> <span id="rev-count-num">127</span> reseñas reales en Google</div>
+      <div style="color:var(--muted);font-size:14px;margin-top:5px;display:flex;align-items:center;gap:7px"><span style="width:16px;height:16px;display:inline-flex;flex:0 0 auto"><svg viewBox="0 0 48 48" width="16" height="16"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg></span> <span id="rev-count-num" data-rev-count="total">{REVIEWS_COUNT_TOTAL}</span> reseñas reales en Google, entre los dos salones</div>
     </div>
   </div>
+  <p class="center" style="color:var(--muted);font-size:14px;margin:-22px 0 32px">Fuenlabrada <b style="color:var(--forest)"><span data-rev-score="fuen">{_num(REVIEWS_FUEN['rating'])}</span>★</b> (<span data-rev-count="fuen">{REVIEWS_FUEN['count']}</span> reseñas) · Humanes <b style="color:var(--forest)"><span data-rev-score="huma">{_num(REVIEWS_HUMA['rating'])}</span>★</b> (<span data-rev-count="huma">{REVIEWS_HUMA['count']}</span> reseñas)</p>
   <div class="rev-grid" id="rev-grid">{rev_cards_html}</div>
   <p class="center" style="margin-top:28px"><a href="https://www.google.com/maps/search/Luluca+Nails+Fuenlabrada" target="_blank" rel="noopener" class="btn btn-ghost">Ver todas las reseñas en Google</a></p>
 </div></section>
 
 <section class="locs sec-pad" id="locales"><div class="wrap">
   <div class="head"><span class="eyebrow">Dónde estamos</span><h2>Nuestros dos salones</h2></div>
-  <p class="subnote">Luluca Nails en Fuenlabrada y en Humanes de Madrid. Ven a vernos o reserva online en el salón que prefieras.</p>
+  <p class="subnote">Luluca Nails en Fuenlabrada y en Humanes de Madrid. Cada salón tiene su equipo y su propia agenda: elige el que te pille mejor.</p>
   <div class="loc-grid">
-    <div class="loc"><div class="map"><iframe loading="lazy" src="https://www.google.com/maps?q=Calle%20Escocia%201,%20Fuenlabrada&output=embed"></iframe></div><div class="body"><span class="tag-here">Fuenlabrada</span><h3>Fuenlabrada</h3><div class="info"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> {c['fuen_addr']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg> {c['phone_display']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> {c['fuen_hours']}</div></div><div class="actions"><a href="index.html#reservar" onclick="lzGoto('fuen')" class="btn btn-primary">Reservar aquí</a><a href="{c['fuen_maps']}" target="_blank" rel="noopener" class="btn btn-ghost">Cómo llegar</a></div></div></div>
-    <div class="loc"><div class="map"><iframe loading="lazy" src="https://www.google.com/maps?q=Avenida%20Campo%20Hermoso%2044,%20Humanes%20de%20Madrid&output=embed"></iframe></div><div class="body"><span class="tag-here">Humanes</span><h3>Humanes de Madrid</h3><div class="info"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> {c['huma_addr']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg> {c['huma_phone_display']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> {c['huma_hours']}</div></div><div class="actions"><a href="index.html#reservar" onclick="lzGoto('huma')" class="btn btn-primary">Reservar aquí</a><a href="{c['huma_maps']}" target="_blank" rel="noopener" class="btn btn-ghost">Cómo llegar</a></div></div></div>
+    <div class="loc"><div class="map"><iframe loading="lazy" src="https://www.google.com/maps?q=Calle%20Escocia%201,%20Fuenlabrada&output=embed"></iframe></div><div class="body"><span class="tag-here">Fuenlabrada</span><span class="tag-pill">Nuestro primer salón · 4 años</span><h3>Fuenlabrada</h3><div class="info"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> {c['fuen_addr']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg> {c['phone_display']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> {c['fuen_hours']}</div><div><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.2l5.9-.9z"/></svg> <span data-rev-score="fuen">{_num(REVIEWS_FUEN['rating'])}</span> en Google · <span data-rev-count="fuen">{REVIEWS_FUEN['count']}</span> reseñas</div></div><div class="actions"><a href="index.html#reservar" onclick="lzGoto('fuen')" class="btn btn-primary">Reservar en Fuenlabrada</a><a href="{c['whatsapp']}" target="_blank" rel="noopener" class="btn btn-wa">{WA_ICON} WhatsApp</a><a href="{c['fuen_maps']}" target="_blank" rel="noopener" class="btn btn-ghost">Cómo llegar</a></div></div></div>
+    <div class="loc"><div class="map"><iframe loading="lazy" src="https://www.google.com/maps?q=Avenida%20Campo%20Hermoso%2044,%20Humanes%20de%20Madrid&output=embed"></iframe></div><div class="body"><span class="tag-here">Humanes</span><span class="tag-pill nuevo">Recién abierto</span><h3>Humanes de Madrid</h3><div class="info"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> {c['huma_addr']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg> {c['huma_phone_display']}</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> {c['huma_hours']}</div><div><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.2l5.9-.9z"/></svg> <span data-rev-score="huma">{_num(REVIEWS_HUMA['rating'])}</span> en Google · <span data-rev-count="huma">{REVIEWS_HUMA['count']}</span> reseñas</div></div><div class="actions"><a href="index.html#reservar" onclick="lzGoto('huma')" class="btn btn-primary">Reservar en Humanes</a><a href="{c['huma_whatsapp']}" target="_blank" rel="noopener" class="btn btn-wa">{WA_ICON} WhatsApp</a><a href="{c['huma_maps']}" target="_blank" rel="noopener" class="btn btn-ghost">Cómo llegar</a></div></div></div>
   </div>
 </div></section>
 {footer()}{mobilebar()}{scripts()}"""

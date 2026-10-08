@@ -170,6 +170,8 @@ nav.menu a:hover,nav.menu a.active{color:var(--gold)}
 .loc .map .pin{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--forest)}
 .loc .body{padding:22px 24px 24px}
 .loc .tag-here{display:inline-block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:6px}
+.loc .tag-pill{display:inline-block;margin:0 0 6px 8px;padding:3px 10px;border-radius:999px;background:#eef1ec;color:var(--forest);font-size:11px;letter-spacing:.04em;font-weight:600;vertical-align:2px}
+.loc .tag-pill.nuevo{background:var(--gold-2);color:#3a2f12}
 .loc h3{font-size:26px;color:var(--forest)}
 .loc .info{font-size:14px;color:var(--muted);margin:12px 0 18px}
 .loc .info div{margin-bottom:5px;display:flex;gap:8px;align-items:flex-start}
