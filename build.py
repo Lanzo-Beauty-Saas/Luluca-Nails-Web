@@ -810,14 +810,12 @@ def build_index():
 
 # ---------- SERVICIOS ----------
 def build_servicios():
-    # AVISO: este fichero fuente NO esta en el repositorio y no se conserva en ninguna
-    # copia local. Mientras falte, build.py NO se puede ejecutar entero. El servicios.html
-    # publicado se genero en su dia y se mantiene a mano. Para recuperar el generador hay
-    # que reconstruir la fuente desde el catalogo de servicios.html (revertir cat2 -> cat).
-    src=open(os.path.join(OUT,"luluca_servicios.html"),encoding="utf-8").read()
-    i0=src.index('<div class="catalog">')
-    i1=src.index('<section class="reserva-band"')
-    catalog=src[i0:i1].strip()
+    # La carta vive aparte, en fuente/catalogo-servicios.html: es el unico trozo de
+    # la web que no se genera desde datos, sino que se escribe a mano cuando el salon
+    # cambia precios. Antes la fuente era un luluca_servicios.html que no estaba en el
+    # repositorio, asi que build.py no se podia ejecutar entero; se reconstruyo el
+    # 8-10-2026 desde el servicios.html publicado y ya viaja con el codigo.
+    catalog=open(os.path.join(OUT,"fuente","catalogo-servicios.html"),encoding="utf-8").read().strip()
     catalog=catalog.replace('class="cat"','class="cat2"')
     c=CLIENT
     body=f"""{header('servicios')}
