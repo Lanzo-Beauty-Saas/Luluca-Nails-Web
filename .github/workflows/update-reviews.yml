@@ -23,6 +23,8 @@ jobs:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
           PLACE_ID: ${{ vars.PLACE_ID }}
           PLACE_QUERY: 'Luluca Nails Fuenlabrada'
+          PLACE_ID_2: ${{ vars.PLACE_ID_2 }}
+          PLACE_QUERY_2: 'Luluca Nails Humanes de Madrid'
           MIN_RATING: '4'
           MAX: '6'
         run: node scripts/fetch-reviews.mjs

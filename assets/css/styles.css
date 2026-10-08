@@ -264,3 +264,30 @@ details.cat2[open] .chev{transform:rotate(180deg)}
 .legal-body ul{margin:0 0 14px 20px}
 .legal-body a{color:var(--gold)}
 .legal a{color:inherit;text-decoration:underline}
+
+/* ---- Guías de servicio (manicura-semipermanente.html y hermanas) ---- */
+.tira-guias{margin:26px 0 0;text-align:center;font-size:14.5px;color:var(--muted)}
+.tira-guias a{color:var(--forest);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--gold-2)}
+.tira-guias a:hover{color:var(--gold)}
+.tira-guias b{color:var(--forest)}
+.g-datos{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.g-datos>div{background:#fff;padding:14px 16px;display:flex;flex-direction:column;gap:3px}
+.g-datos span{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.g-datos b{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--forest);font-weight:600;line-height:1.2}
+@media(max-width:720px){ .g-datos{grid-template-columns:1fr 1fr} }
+.g-cuerpo p{color:var(--muted);font-size:16px;line-height:1.78;margin-bottom:13px}
+.g-cuerpo b{color:var(--forest);font-weight:600}
+.g-cuerpo a{color:var(--forest);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--gold-2)}
+.g-cuerpo a:hover{color:var(--gold)}
+.g-precios{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+.g-fila{display:flex;gap:18px;align-items:baseline;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.g-fila:last-child{border-bottom:0}
+.g-fila b{display:block;color:var(--forest);font-weight:600;font-size:15.5px}
+.g-fila small{display:block;color:var(--muted);font-size:13px;margin-top:2px;line-height:1.45}
+.g-precio{color:var(--gold);font-weight:600;white-space:nowrap}
+.g-faq{border-bottom:1px solid var(--line)}
+.g-faq summary{cursor:pointer;padding:14px 0;color:var(--forest);font-size:16.5px;font-weight:500;display:flex;justify-content:space-between;gap:14px;list-style:none}
+.g-faq summary::-webkit-details-marker{display:none}
+.g-faq summary::after{content:'+';color:var(--gold);font-size:21px;line-height:1;flex:0 0 auto}
+.g-faq[open] summary::after{content:'\2013'}
+.g-faq p{color:var(--muted);font-size:15.5px;line-height:1.72;padding:0 0 16px;margin:0}

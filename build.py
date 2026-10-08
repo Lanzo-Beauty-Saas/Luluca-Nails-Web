@@ -20,14 +20,38 @@ CLIENT = {
   "facebook": "https://www.facebook.com/lulucanails",
   "fuen_addr": "Calle Escocia 1, Fuenlabrada, Madrid",
   "fuen_maps": "https://www.google.com/maps/search/?api=1&query=Calle%20Escocia%201%20Fuenlabrada",
-  "fuen_hours": "L-V 09:00–20:00 · S 09:00–14:00",
+  "fuen_cp": "28942",
+  "fuen_calle": "Calle Escocia 1",
+  "fuen_geo": (40.288493, -3.807728),
   # Humanes (segundo local), con teléfono y WhatsApp propios.
   "huma_addr": "Avenida Campo Hermoso 44, Humanes de Madrid",
   "huma_maps": "https://www.google.com/maps/search/?api=1&query=Avenida%20Campo%20Hermoso%2044%20Humanes%20de%20Madrid",
-  "huma_hours": "L-V 10:00–20:30 · S 10:00–15:00",
+  "huma_cp": "28970",
+  "huma_calle": "Avenida Campo Hermoso 44",
+  "huma_geo": (40.2533753, -3.8225692),
   "huma_phone_display": "+34 624 11 08 86",
   "huma_tel": "+34624110886",
 }
+
+# ------- Horarios -------
+# Fuente unica: los tramos. De aqui sale el texto que lee la clienta ("L-V
+# 09:00–20:00 · S 09:00–14:00") y el openingHoursSpecification que lee Google.
+# Antes el texto era una cadena a mano y no habia datos para Google; mantener dos
+# copias del horario es exactamente como las tres paginas legales se quedaron
+# anunciando el horario viejo de Humanes durante dos semanas.
+HORARIOS = {
+  "fuen": [(("Monday","Tuesday","Wednesday","Thursday","Friday"), "L-V", "09:00", "20:00"),
+           (("Saturday",),                                        "S",   "09:00", "14:00")],
+  "huma": [(("Monday","Tuesday","Wednesday","Thursday","Friday"), "L-V", "10:00", "20:30"),
+           (("Saturday",),                                        "S",   "10:00", "15:00")],
+}
+def horario_texto(k):
+    return " · ".join("%s %s–%s" % (et, a, b) for _, et, a, b in HORARIOS[k])
+def horario_schema(k):
+    return [{"@type":"OpeningHoursSpecification","dayOfWeek":list(dias),"opens":a,"closes":b}
+            for dias, _, a, b in HORARIOS[k]]
+CLIENT["fuen_hours"] = horario_texto("fuen")
+CLIENT["huma_hours"] = horario_texto("huma")
 
 # Slugs de reservas (cada local a su cuenta de Lanzo)
 SLUG_FUEN = "luluca-nails-fuenlabrada"
@@ -111,7 +135,41 @@ def write_reviews_json(path="reviews.json"):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-def head(title, desc):
+def negocios_jsonld():
+    """Ficha de cada salon para Google (schema.org NailSalon).
+
+    Es lo que alimenta el panel lateral y el mapa en las busquedas del tipo
+    "manicura en Humanes". No llevaba ninguno. Sin `aggregateRating` a
+    proposito: la nota puesta por el propio negocio en su web es justo lo que
+    Google trata como resena interesada, y las de verdad ya estan en sus fichas.
+    """
+    c=CLIENT
+    def salon(k, nombre, tel, maps):
+        lat,lon = c[k+"_geo"]
+        return {
+          "@type":"NailSalon",
+          "@id":SITE_URL+"/#"+k,
+          "name":"Luluca Nails "+nombre,
+          "url":SITE_URL+"/",
+          "image":SITE_URL+"/assets/img/hero.jpg",
+          "telephone":tel,
+          "priceRange":"€€",
+          "currenciesAccepted":"EUR",
+          "address":{"@type":"PostalAddress","streetAddress":c[k+"_calle"],
+                     "addressLocality":nombre,"postalCode":c[k+"_cp"],
+                     "addressRegion":"Madrid","addressCountry":"ES"},
+          "geo":{"@type":"GeoCoordinates","latitude":lat,"longitude":lon},
+          "hasMap":maps,
+          "openingHoursSpecification":horario_schema(k),
+          "sameAs":[c["instagram"],c["tiktok"],c["facebook"]],
+        }
+    grafo=[salon("fuen","Fuenlabrada",c["tel"],c["fuen_maps"]),
+           salon("huma","Humanes de Madrid",c["huma_tel"],c["huma_maps"])]
+    return ('<script type="application/ld+json">'
+            + json.dumps({"@context":"https://schema.org","@graph":grafo}, ensure_ascii=False)
+            + '</script>')
+
+def head(title, desc, jsonld=""):
     return f"""<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -127,6 +185,7 @@ def head(title, desc):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/styles.css">
+{jsonld}
 </head>
 <body data-locale="fuen">
 <div style="background:var(--forest);color:#fff;text-align:center;font-size:13.5px;padding:9px 16px;line-height:1.35">El mismo Luluca Nails de siempre, ahora también en <b style="color:var(--gold-2)">Humanes de Madrid</b> · Reserva online en Fuenlabrada o Humanes</div>
@@ -168,11 +227,21 @@ def footer():
   </div>
   <div><h5>Salón Fuenlabrada</h5><a href="{c['fuen_maps']}" target="_blank" rel="noopener">{c['fuen_addr']}</a><a href="tel:{c['tel']}">{c['phone_display']}</a><a href="mailto:{c['email']}">{c['email']}</a><span style="color:#a9b6a9">{c['fuen_hours']}</span></div>
   <div><h5>Salón Humanes</h5><a href="{c['huma_maps']}" target="_blank" rel="noopener">{c['huma_addr']}</a><a href="tel:{c['huma_tel']}">{c['huma_phone_display']}</a><span style="color:#a9b6a9">{c['huma_hours']}</span></div>
-  <div><h5>Enlaces</h5><a href="servicios.html">Servicios y precios</a><a href="galeria.html">Galería</a><a href="index.html#reservar">Reservar cita</a><a href="contacto.html">Contacto</a></div>
+  <div><h5>Enlaces</h5><a href="servicios.html">Servicios y precios</a>{"".join('<a href="%s">%s</a>' % (g["slug"], g["nav"]) for g in GUIAS)}<a href="galeria.html">Galería</a><a href="index.html#reservar">Reservar cita</a><a href="contacto.html">Contacto</a></div>
 </div>
 <div class="legal">© 2026 Luluca Nails · Fuenlabrada y Humanes · Reservas gestionadas con Lanzo · <a href="aviso-legal.html">Aviso legal</a> · <a href="privacidad.html">Privacidad</a> · <a href="cookies.html">Cookies</a></div>
 </footer>
 """
+
+def tira_guias(actual=""):
+    """Enlaces a las guias de servicio. Una pagina nueva sin enlaces desde el
+    resto del sitio es una pagina que Google tarda en encontrar y que nadie
+    pincha; estas cuelgan de la home, de la carta y del pie."""
+    items = " · ".join(
+      ('<b>%s</b>' % g["nav"]) if g["slug"] == actual
+      else ('<a href="%s">%s</a>' % (g["slug"], g["nav"]))
+      for g in GUIAS)
+    return '<p class="tira-guias">Guías: ' + items + '</p>'
 
 def mobilebar():
     c=CLIENT
@@ -752,7 +821,7 @@ def build_index():
   <div class="hero-copy">
     <span class="eyebrow">Salón de uñas, cejas y belleza · <span data-locname>Fuenlabrada</span></span>
     <h1>Uñas <em>sanas</em>,<br>cuidadas al detalle.</h1>
-    <p class="lead">Manicura, nail art, cejas y pestañas con técnicas profesionales y un trato cercano. Tu momento de belleza, reservado en un minuto.</p>
+    <p class="lead">Manicura semipermanente, uñas de gel y acrílico, nail art, cejas y pestañas en <b>Fuenlabrada</b> y <b>Humanes de Madrid</b>. Técnicas profesionales, trato cercano y tu cita reservada en un minuto.</p>
     <div class="hero-actions">
       <a href="index.html#reservar" class="btn btn-gold">{CAL_ICON} Reservar cita</a>
       <a href="servicios.html" class="btn btn-ghost">Ver servicios</a>
@@ -795,6 +864,7 @@ def build_index():
 <section class="cats sec-pad" id="servicios"><div class="wrap">
   <div class="head"><span class="eyebrow">Nuestros servicios</span><h2>Todo para tus manos, tu mirada y tu piel</h2><p>Siete familias de servicios. Toca la que te interese para ver todos los detalles y precios.</p></div>
   <div class="cat-grid">{cat_html}</div>
+  {tira_guias()}
 </div></section>
 <section class="gallery sec-pad" id="galeria"><div class="wrap">
   <div class="head"><div><span class="eyebrow">Nuestro trabajo</span><h2>Nail art hecho a tu medida</h2><p>Diseños reales de Luluca. Aquí es donde ponemos el color.</p></div><a href="galeria.html" class="btn btn-ghost">Ver galería completa</a></div>
@@ -840,8 +910,9 @@ def build_index():
   </div>
 </div></section>
 {footer()}{mobilebar()}{scripts()}"""
-    return head("Luluca Nails — Uñas, manicura semipermanente y nail art en Fuenlabrada y Humanes",
-                "Salón de uñas, cejas y pestañas en Fuenlabrada y Humanes de Madrid. Manicura semipermanente, uñas de gel y acrílico, nivelación, pedicura y nail art. 100% veganas. Reserva tu cita online.") + body
+    return head("Uñas y manicura en Fuenlabrada y Humanes | Luluca Nails",
+                "Salón de uñas, cejas y pestañas en Fuenlabrada y Humanes de Madrid. Manicura semipermanente, uñas de gel y acrílico, nivelación, pedicura y nail art. 100% veganas. Reserva tu cita online.",
+                negocios_jsonld()) + body
 
 # ---------- SERVICIOS ----------
 def build_servicios():
@@ -854,7 +925,7 @@ def build_servicios():
     catalog=catalog.replace('class="cat"','class="cat2"')
     c=CLIENT
     body=f"""{header('servicios')}
-<section class="page-hero"><span class="eyebrow">Carta de servicios</span><h1>Nuestros servicios y precios</h1><p>Todo lo que hacemos, ordenado por categorías para que encuentres el tuyo en segundos. Toca una categoría para desplegarla.</p></section>
+<section class="page-hero"><span class="eyebrow">Carta de servicios</span><h1>Nuestros servicios y precios</h1><p>Todo lo que hacemos, ordenado por categorías para que encuentres el tuyo en segundos. Toca una categoría para desplegarla.</p>{tira_guias()}</section>
 <div class="chips"><div class="cw">
   <span class="chip" onclick="openCat('manicura')">Manicura</span>
   <span class="chip" onclick="openCat('pedicura')">Pedicura</span>
@@ -868,7 +939,160 @@ def build_servicios():
 <section class="reserva-band" id="reserva"><span class="eyebrow" style="color:var(--gold-2)">Reserva online</span><h2>¿Lo tienes claro? Reserva en un minuto</h2><p>Elige día y hora en la agenda del salón que prefieras: Fuenlabrada o Humanes de Madrid. Sin llamadas ni esperas.</p><a href="index.html#reservar" class="btn btn-gold">Ir a reservar</a></section>
 <div class="disc">Precios y servicios orientativos según la lista del salón. Las duraciones son aproximadas y pueden variar según el estado de la uña. Consulta cualquier duda antes de tu cita.</div>
 {footer()}{mobilebar()}{scripts()}"""
-    return head("Servicios y precios — Luluca Nails","Carta completa de servicios y precios de Luluca Nails: manicura, pedicura, uñas esculpidas, nail art, pestañas, cejas, depilación y gemas dentales.")+body
+    return head("Precios de manicura y uñas en Fuenlabrada | Luluca Nails","Carta completa con los precios de Luluca Nails en Fuenlabrada y Humanes: manicura semipermanente, uñas de gel y acrílico, nivelación, pedicura, nail art, pestañas, cejas y gemas dentales.")+body
+
+# ---------- GUÍAS DE SERVICIO (páginas de aterrizaje) ----------
+# Una página por servicio estrella: es lo que se busca en Google ("manicura
+# semipermanente en Fuenlabrada") y lo que la home no puede responder sin
+# convertirse en un ladrillo. Los precios y las duraciones salen de la carta
+# real del salón; si cambian ahí, hay que cambiarlos aquí.
+#
+# PENDIENTE DE REPASO DE ANDREA: los textos los redacta el generador, no ella.
+# Todo lo que afirman está en su carta o es práctica corriente del oficio, pero
+# hablan en su nombre y conviene que los lea antes de darlos por buenos.
+GUIAS = [
+  {
+    "slug":"manicura-semipermanente.html",
+    "nav":"Manicura semipermanente",
+    "title":"Manicura semipermanente en Fuenlabrada y Humanes | Luluca Nails",
+    "desc":"Manicura semipermanente desde 14,90 € en Luluca Nails, Fuenlabrada y Humanes de Madrid. Esmaltes 100% veganos de larga duración. Reserva tu cita online en un minuto.",
+    "eyebrow":"Manicura semipermanente",
+    "h1":"Manicura semipermanente en Fuenlabrada y Humanes",
+    "intro":"El esmaltado que no se salta el día dos. Lo hacemos cuidando la uña natural: sin limar de más, sin prisas y con esmaltes 100% veganos de larga duración.",
+    "desde":"14,90 €", "dura":"40 min", "aguanta":"2 a 3 semanas",
+    "cuerpo":[
+      ("Qué es exactamente",
+       "<p>El semipermanente es un esmalte que se cura con lámpara y se queda fijo: ni se raya al hacer la compra ni se levanta al abrir una lata. Nada que ver con el esmalte tradicional, que necesita su rato de secado y aguanta con suerte tres o cuatro días.</p>"
+       "<p>No lleva extensión y no alarga la uña: viste <b>tu</b> uña. Si lo que quieres es largo, lo tuyo son las <a href=\"unas-de-gel-y-acrilico.html\">uñas de gel o acrílico</a>; y si la tienes fina o te gustaría verla más recta, mira la <a href=\"nivelacion.html\">nivelación</a>.</p>"),
+      ("Cómo lo hacemos",
+       "<p>Retiramos el semipermanente anterior sin arrancar nada, limamos la forma que quieras, empujamos la cutícula y esmaltamos. La cita base son 40 minutos y sales con las manos secas y listas.</p>"
+       "<p>Lo que no hacemos: acelerar la retirada tirando del esmalte. Es la forma más rápida de dejar la uña fina y quebradiza, y de que la siguiente te dure menos. Preferimos tardar cinco minutos más.</p>"),
+      ("Cuánto aguanta",
+       "<p>Entre dos y tres semanas, según lo que te crezca la uña y lo que trabajes con las manos. Cuando empieza a verse la raíz es el momento de volver: no hace falta esperar a que se levante.</p>"
+       "<p>Si se te rompe una uña entre citas, la reparamos por 1,50 €. No hay que rehacer la mano entera.</p>"),
+    ],
+    "precios":[
+      ("Esmaltado semipermanente color liso","Retirar semi, limar, empujar cutículas y esmaltar · 40 min","14,90 €"),
+      ("Esmaltado semi con cutículas","Con retirada de cutículas · 45 min","19,90 €"),
+      ("Esmaltado semi con francesa básica","· 45 min","17,90 €"),
+      ("Manicura completa semi","Con exfoliación, hidratación con vela especial y masaje · 60 min","26,90 €"),
+      ("Retirar semi + manicura básica","Cuando quieres darle un respiro al color","8 €"),
+      ("Reparar 1 uña en semi","","1,50 €"),
+    ],
+    "faq":[
+      ("¿Estropea la uña natural?","No, si se retira bien. Lo que estropea la uña es arrancar el esmalte o limar de más al quitarlo. Nosotras retiramos con producto y paciencia: la salud de tu uña va primero en cada cita."),
+      ("¿Tengo que venir con las uñas limpias?","No hace falta. La retirada del semipermanente anterior va incluida en el precio del esmaltado."),
+      ("¿Cuánto dura la cita?","40 minutos el esmaltado color liso. Con retirada de cutículas, francesa o la manicura completa con masaje, cuenta entre 45 y 60 minutos."),
+      ("¿Los esmaltes son veganos?","Sí. Trabajamos solo con esmaltes 100% veganos y sin testar en animales, de calidad profesional y larga duración."),
+      ("¿Puedo reservar sin llamar?","Sí. Eliges salón, servicio y hora en la agenda de esta web y la cita queda confirmada al momento, con recordatorio automático."),
+    ],
+  },
+  {
+    "slug":"unas-de-gel-y-acrilico.html",
+    "nav":"Uñas de gel y acrílico",
+    "title":"Uñas de gel y acrílico en Fuenlabrada y Humanes | Luluca Nails",
+    "desc":"Uñas esculpidas de gel y acrílico desde 31,90 € en Luluca Nails, Fuenlabrada y Humanes de Madrid. Uñas nuevas, rellenos, baby boomer y reconstrucción de uñas mordidas.",
+    "eyebrow":"Uñas esculpidas",
+    "h1":"Uñas de gel y acrílico en Fuenlabrada y Humanes",
+    "intro":"Largo, forma y resistencia a tu medida. Esculpimos la uña desde cero —gel, soft gel o acrílico— y la mantenemos con rellenos cada tres semanas.",
+    "desde":"31,90 €", "dura":"65 min", "aguanta":"3 semanas entre rellenos",
+    "cuerpo":[
+      ("Gel, soft gel o acrílico: cuál te toca",
+       "<p>Los tres sirven para alargar y reforzar, y la elección depende de tu uña y de lo que hagas con las manos, no de cuál esté de moda. El <b>soft gel</b> es el más ligero y el de acabado más natural. El <b>acrílico</b> aguanta más castigo y es el que mejor funciona en uñas muy mordidas o muy planas. Te lo decimos en la cita, con tu mano delante.</p>"
+       "<p>Si lo que buscas es solo color sobre tu uña, sin alargar, lo tuyo es la <a href=\"manicura-semipermanente.html\">manicura semipermanente</a>.</p>"),
+      ("Uñas nuevas y rellenos",
+       "<p>La primera cita es la larga: entre 65 y 80 minutos según el largo y la forma. A partir de ahí solo necesitas el <b>relleno</b>, 60 minutos cada tres semanas, que cubre la raíz que ha crecido y renueva el color.</p>"
+       "<p>El relleno tiene precio de relleno mientras no haya uñas rotas y no hayan pasado más de tres semanas. Pasado eso la mano se rehace, y el precio es el de uñas nuevas.</p>"),
+      ("Uñas mordidas",
+       "<p>Es de lo que más hacemos, y aquí no hay que dar explicaciones al llegar. La reconstrucción da forma y largo a una uña que casi no tiene lecho, y de paso quita las ganas de seguir mordiendo, porque ya hay algo bonito que cuidar.</p>"),
+    ],
+    "precios":[
+      ("Uñas nuevas con extensión + semi / tradicional","Máximo de largo molde nº2, color liso · 75 min","36,90 €"),
+      ("Uñas nuevas con extensión · Soft Gel","Alargamiento con soft gel · 70 min","31,90 €"),
+      ("Uñas nuevas sin extensión + semi / tradicional","· 65 min","31,90 €"),
+      ("Uñas nuevas Stiletto · Bailarina · XXL","Largo superior a molde nº2 · 80 min","40,90 €"),
+      ("Uñas nuevas con extensión baby boomer","· 80 min","45,90 €"),
+      ("Reconstrucción de uñas mordidas","· 75 min","40,90 €"),
+      ("Rellenos + semi / tradicional","Sin uñas rotas, hasta 3 semanas · 60 min","31,90 €"),
+      ("Retirar gel / acrílico","Retirar, limar, empujar cutícula y brillo tratamiento","13 €"),
+    ],
+    "faq":[
+      ("¿Cada cuánto hay que rellenar?","Cada tres semanas. Es el margen en el que el relleno sigue siendo un relleno: más allá, la uña ha crecido tanto que hay que rehacerla."),
+      ("¿Puedo quitármelas cuando quiera?","Sí, y conviene hacerlo en el salón: retirar gel o acrílico en casa a tirones se lleva por delante capas de tu uña. La retirada cuesta 13 € e incluye limado y brillo de tratamiento."),
+      ("¿Se pueden poner en uñas muy cortas o mordidas?","Sí. La reconstrucción de uñas mordidas está pensada justo para eso."),
+      ("¿Cuánto se tarda la primera vez?","Entre 65 y 80 minutos, según el largo y la forma que elijas."),
+      ("¿Y si se me rompe una?","La reparamos: 4,50 € la uña rota y 2,50 € el parche. No hay que rehacer la mano."),
+    ],
+  },
+  {
+    "slug":"nivelacion.html",
+    "nav":"Nivelación",
+    "title":"Nivelación de uñas en Fuenlabrada y Humanes | Luluca Nails",
+    "desc":"Nivelación de uñas con base rubber por 27 € en Luluca Nails, Fuenlabrada y Humanes de Madrid. Para uñas finas, curvadas o que se parten. Reserva tu cita online.",
+    "eyebrow":"Nivelación",
+    "h1":"Nivelación de uñas en Fuenlabrada y Humanes",
+    "intro":"El punto intermedio entre el semipermanente y las uñas esculpidas: refuerza tu uña y corrige su forma, sin alargarla.",
+    "desde":"27 €", "dura":"50 min", "aguanta":"3 semanas",
+    "cuerpo":[
+      ("Para quién es",
+       "<p>Para quien tiene la uña fina y se le parte, para quien la tiene curvada o en pico y quiere verla recta, y para quien se cansa de que el semipermanente le dure poco porque su uña flexiona demasiado.</p>"
+       "<p>No alarga. Si quieres largo, son <a href=\"unas-de-gel-y-acrilico.html\">uñas de gel o acrílico</a>; si tu uña está sana y solo quieres color, con la <a href=\"manicura-semipermanente.html\">manicura semipermanente</a> te sobra.</p>"),
+      ("Qué hacemos",
+       "<p>Usamos una <b>base rubber</b>, un gel más denso que el esmalte normal, para construir una capa fina que iguala la superficie de la uña y le da estructura donde no la tiene. Encima, color liso. La cita son 50 minutos.</p>"
+       "<p>El resultado no canta: la uña parece tuya, solo que recta y resistente.</p>"),
+      ("Cuánto aguanta",
+       "<p>Unas tres semanas, como el semipermanente, pero sin el típico salto en la punta que aparece en las uñas que flexionan mucho.</p>"),
+    ],
+    "precios":[
+      ("Nivelación","Nivelar la uña con base rubber y esmaltar color liso · 50 min","27 €"),
+      ("Esmaltado semipermanente color liso","Si tu uña no necesita refuerzo · 40 min","14,90 €"),
+      ("Reparar 1 uña en semi","","1,50 €"),
+    ],
+    "faq":[
+      ("¿La nivelación alarga la uña?","No. Refuerza y corrige la forma de la uña que ya tienes. Para alargar hay que esculpir con gel o acrílico."),
+      ("¿En qué se diferencia del semipermanente normal?","En que debajo del color lleva una base rubber que iguala la superficie y aguanta la flexión. En una uña fina o curvada, el semipermanente solo se salta antes."),
+      ("¿Sirve para uñas que se parten?","Es justo su razón de ser: le da a la uña la estructura que le falta mientras crece."),
+      ("¿Cuánto dura la cita?","50 minutos."),
+    ],
+  },
+]
+
+H2 = '<h2 style="font-family:\'Cormorant Garamond\',serif;font-size:clamp(26px,3.4vw,34px);color:var(--forest);margin:%s">%s</h2>'
+
+def build_guia(g):
+    bloques = "".join(H2 % ("34px 0 12px", t) + b for t, b in g["cuerpo"])
+    filas = "".join(
+      '<div class="g-fila"><div><b>%s</b>%s</div><span class="g-precio">%s</span></div>'
+      % (n, ("<small>" + d + "</small>" if d else ""), pr)
+      for n, d, pr in g["precios"])
+    faqs = "".join('<details class="g-faq"><summary>%s</summary><p>%s</p></details>' % (q, a)
+                   for q, a in g["faq"])
+    faq_ld = json.dumps({"@context":"https://schema.org","@type":"FAQPage",
+      "mainEntity":[{"@type":"Question","name":q,
+                     "acceptedAnswer":{"@type":"Answer","text":a}} for q, a in g["faq"]]},
+      ensure_ascii=False)
+    body = f"""{header('servicios')}
+<section class="page-hero"><span class="eyebrow">{g['eyebrow']}</span><h1>{g['h1']}</h1><p>{g['intro']}</p></section>
+<section class="sec-pad" style="padding-top:20px"><div class="wrap" style="max-width:860px">
+  <div class="g-datos">
+    <div><span>Desde</span><b>{g['desde']}</b></div>
+    <div><span>La cita dura</span><b>{g['dura']}</b></div>
+    <div><span>Te aguanta</span><b>{g['aguanta']}</b></div>
+    <div><span>Dónde</span><b>Fuenlabrada y Humanes</b></div>
+  </div>
+  <div class="g-cuerpo">{bloques}</div>
+  {H2 % ("40px 0 14px", "Precios")}
+  <div class="g-precios">{filas}</div>
+  <div class="disc" style="margin:14px 0 0">Precios de la carta del salón. Las duraciones son aproximadas y pueden variar según el estado de la uña.</div>
+  {H2 % ("40px 0 14px", "Preguntas frecuentes")}
+  {faqs}
+  {tira_guias(g['slug'])}
+  <p style="margin-top:18px;color:var(--muted);font-size:14.5px">¿Buscas otra cosa? Mira la <a href="servicios.html">carta completa con todos los precios</a> o la <a href="galeria.html">galería de trabajos</a>.</p>
+</div></section>
+<section class="reserva-band"><span class="eyebrow" style="color:var(--gold-2)">Reserva online</span><h2>Reserva en el salón que te pille mejor</h2><p>Fuenlabrada o Humanes de Madrid, cada uno con su propia agenda. Eliges día y hora, y la cita queda confirmada al momento.</p><a href="index.html#reservar" class="btn btn-gold">Ir a reservar</a></section>
+{footer()}{mobilebar()}{scripts()}"""
+    return head(g["title"], g["desc"],
+                negocios_jsonld() + '<script type="application/ld+json">' + faq_ld + '</script>') + body
 
 # ---------- GALERÍA ----------
 def build_galeria():
@@ -879,7 +1103,7 @@ def build_galeria():
 <section class="gallery sec-pad" style="background:var(--cream)"><div class="wrap"><div class="gal-grid">{tiles}</div>
 <p class="center" style="margin-top:34px"><a href="index.html#reservar" class="btn btn-primary">Reserva tu cita</a></p></div></section>
 {footer()}{mobilebar()}{scripts()}"""
-    return head("Galería — Luluca Nails","Galería de trabajos reales de Luluca Nails: nail art, manicura, diseños y más.")+body
+    return head("Nail art y diseños de uñas | Luluca Nails Fuenlabrada","Galería de trabajos reales de Luluca Nails en Fuenlabrada y Humanes: nail art, francesa, ojo de gato, baby boomer y manicura semipermanente.")+body
 
 # ---------- CONTACTO ----------
 def build_contacto():
@@ -917,7 +1141,7 @@ def build_contacto():
   </div>
 </div></section>
 {footer()}{mobilebar()}{scripts()}"""
-    return head("Contacto — Luluca Nails","Contacta con Luluca Nails por WhatsApp, teléfono o email. Salones en Fuenlabrada y Humanes de Madrid.")+body
+    return head("Contacto y horarios | Luluca Nails Fuenlabrada y Humanes","Dirección, teléfono, WhatsApp y horarios de los dos salones de Luluca Nails: Calle Escocia 1 (Fuenlabrada) y Avenida Campo Hermoso 44 (Humanes de Madrid).",negocios_jsonld())+body
 
 AVISO_BODY = r"""<h2>1. Datos identificativos</h2>
 <p>En cumplimiento de la Ley 34/2002 de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSICE), se informan los datos del titular de este sitio web:</p>
@@ -1006,6 +1230,26 @@ def canonical_block(path):
       '<link rel="canonical" href="%s">' % url,
     ])
 
+PAGINAS = ["index.html", "servicios.html", "galeria.html", "contacto.html",
+           "aviso-legal.html", "privacidad.html", "cookies.html"]
+
+def write_sitemap(fecha):
+    """Sitemap y robots. No habia ninguno de los dos: Google llegaba a las
+    paginas internas solo siguiendo enlaces, y a una pagina nueva eso le cuesta
+    semanas."""
+    rutas = PAGINAS[:1] + [g["slug"] for g in GUIAS] + PAGINAS[1:]
+    urls = "".join(
+      "  <url><loc>%s</loc><lastmod>%s</lastmod><priority>%s</priority></url>\n"
+      % (SITE_URL + "/" + ("" if r == "index.html" else r), fecha,
+         "1.0" if r == "index.html" else ("0.8" if r in [g["slug"] for g in GUIAS] else "0.6"))
+      for r in rutas)
+    open(os.path.join(OUT, "sitemap.xml"), "w", encoding="utf-8").write(
+      '<?xml version="1.0" encoding="UTF-8"?>\n'
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "</urlset>\n")
+    open(os.path.join(OUT, "robots.txt"), "w", encoding="utf-8").write(
+      "User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % SITE_URL)
+    print("wrote sitemap.xml y robots.txt")
+
 def w(path,html):
     a = '<meta property="og:type" content="website">'
     if a in html and 'rel="canonical"' not in html:
@@ -1020,6 +1264,9 @@ w("contacto.html",build_contacto())
 w("aviso-legal.html",legal_page("Aviso legal","Aviso legal de Luluca Nails, salón de belleza en Fuenlabrada.",AVISO_BODY))
 w("privacidad.html",legal_page("Política de privacidad","Política de privacidad de Luluca Nails conforme al RGPD.",PRIV_BODY))
 w("cookies.html",legal_page("Política de cookies","Política de cookies de la web de Luluca Nails.",COOKIES_BODY))
+for _g in GUIAS:
+    w(_g["slug"], build_guia(_g))
+write_sitemap("2026-10-08")
 write_reviews_json(os.path.join(OUT,"reviews.json"))
 print("wrote reviews.json")
 print("OK")
